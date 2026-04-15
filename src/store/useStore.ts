@@ -1,132 +1,219 @@
 import { create } from 'zustand';
-import { Contact, Debt, Group, UserProfile, Currency } from '../types';
+import { TokenPair, loadTokens, setMemTokens } from '../services/api';
+import { register, login, logout as authLogout } from '../services/auth';
+import { getSummary, getDebtors, createLoan, normalizeDebtor, LoanSummary } from '../services/loans';
+import { getContacts, createInvite, acceptInvite, removeContact, ApiContact } from '../services/contacts';
+import { sseClient } from '../services/sse';
 import { CONTACT_COLORS } from '../constants/theme';
+import { Currency } from '../types';
 
-function genId() {
-  return Math.random().toString(36).slice(2, 10);
+// ── Helpers ───────────────────────────────────
+function colorFor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return CONTACT_COLORS[h % CONTACT_COLORS.length];
 }
 
-function initials(name: string) {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+function ini(name: string): string {
+  return name.split(/[\s_@]+/).map(w => w[0] ?? '').join('').toUpperCase().slice(0, 2) || '??';
 }
 
-// ── Начальные данные ──────────────────────────
-const INITIAL_CONTACTS: Contact[] = [
-  { id: 'c1', name: 'Александр Петров', phone: '+375 29 100-01-01', messenger: 'telegram', messengerHandle: '@alex_p', initials: 'АП', color: '#5B4FE8', inApp: true },
-  { id: 'c2', name: 'Мария Иванова',    phone: '+375 29 100-02-02', messenger: 'whatsapp', initials: 'МИ', color: '#10B981', inApp: true },
-  { id: 'c3', name: 'Дмитрий Козлов',  phone: '+375 44 200-03-03', messenger: 'viber',    initials: 'ДК', color: '#F59E0B', inApp: true },
-  { id: 'c4', name: 'Елена Волкова',   phone: '+375 29 300-04-04', initials: 'ЕВ', color: '#EF4444', inApp: true },
-  { id: 'c5', name: 'Иван Новиков',    phone: '+375 29 300-05-05', initials: 'ИН', color: '#7B519D', inApp: false },
-  { id: 'c6', name: 'Максим Гельф',    phone: '+375 44 704-29-94', initials: 'МГ', color: '#3B82F6', inApp: true },
-];
+// ── Types ─────────────────────────────────────
+export interface Contact {
+  id:       string;
+  username: string;
+  source:   'explicit' | 'loan' | 'mock';
+  color:    string;
+  initials: string;
+}
 
-const INITIAL_DEBTS: Debt[] = [
-  { id: 'd1', contactId: 'c1', contactName: 'Александр Петров', contactInitials: 'АП', contactColor: '#5B4FE8', direction: 'give', type: 'money', amount: 300, currency: 'BYN', comment: 'Займ', status: 'confirmed', createdAt: '2026-03-05' },
-  { id: 'd2', contactId: 'c2', contactName: 'Мария Иванова',    contactInitials: 'МИ', contactColor: '#10B981', direction: 'give', type: 'money', amount: 105, currency: 'BYN', comment: 'Обед',  status: 'confirmed', createdAt: '2026-03-12' },
-  { id: 'd3', contactId: 'c3', contactName: 'Дмитрий Козлов',  contactInitials: 'ДК', contactColor: '#F59E0B', direction: 'take', type: 'money', amount: 150, currency: 'BYN', comment: 'Билеты', status: 'confirmed', createdAt: '2026-03-10' },
-  { id: 'd4', contactId: 'c4', contactName: 'Елена Волкова',   contactInitials: 'ЕВ', contactColor: '#EF4444', direction: 'give', type: 'money', amount: 45,  currency: 'BYN', comment: 'Продукты', status: 'pending', createdAt: '2026-03-15' },
-];
+export interface Debtor {
+  id:       string;
+  username: string;
+  amount:   number;
+  color:    string;
+  initials: string;
+}
 
-const INITIAL_GROUPS: Group[] = [
-  { id: 'g1', name: 'Друзья с дачи', emoji: '🏖️', currency: 'BYN', memberIds: ['c1','c2','c3'], totalBalance: 126, createdAt: '2026-02-01' },
-  { id: 'g2', name: 'Рабочие обеды', emoji: '💼', currency: 'USD', memberIds: ['c1','c3'],       totalBalance: -54, createdAt: '2026-01-15' },
-];
+export interface UserProfile {
+  userId:          string;
+  username:        string;
+  defaultCurrency: Currency;
+  isPremium:       boolean;
+  pushEnabled:     boolean;
+}
 
-// ── Стор ──────────────────────────────────────
+// ── State shape ───────────────────────────────
 interface StoreState {
-  profile: UserProfile;
-  contacts: Contact[];
-  debts: Debt[];
-  groups: Group[];
+  // Auth
+  isAuthed:   boolean;
+  isLoading:  boolean;
+  authError:  string | null;
+  profile:    UserProfile;
 
-  // Profile
-  updateProfile: (data: Partial<UserProfile>) => void;
+  // Data
+  summary:    LoanSummary;
+  debtors:    Debtor[];
+  contacts:   Contact[];
 
-  // Contacts
-  addContact: (name: string, phone: string, messenger?: string, handle?: string) => void;
+  // Auth actions
+  init:       () => Promise<void>;
+  doRegister: (email: string, password: string, username?: string) => Promise<void>;
+  doLogin:    (email: string, password: string) => Promise<void>;
+  doLogout:   () => Promise<void>;
+  clearError: () => void;
 
-  // Debts
-  addDebt: (debt: Omit<Debt, 'id' | 'createdAt'>) => void;
-  closeDebt: (id: string) => void;
-  confirmDebt: (id: string) => void;
-  rejectDebt: (id: string) => void;
-
-  // Groups
-  addGroup: (name: string, emoji: string, currency: Currency, memberIds: string[]) => void;
-
-  // Computed helpers
-  getIncome: (currency?: Currency) => number;
-  getExpenses: (currency?: Currency) => number;
-  getPendingDebts: () => Debt[];
-  getClosedDebts: () => Debt[];
+  // Data actions
+  refresh:          () => Promise<void>;
+  loadContacts:     () => Promise<void>;
+  submitLoan:       (receiverId: string, amount: number, description?: string) => Promise<void>;
+  generateInvite:   () => Promise<{ appUrl: string; tgUrl: string }>;
+  acceptInviteToken:(token: string) => Promise<string>;
+  deleteContact:    (userId: string) => Promise<void>;
 }
 
+// ── Store ─────────────────────────────────────
 export const useStore = create<StoreState>((set, get) => ({
+  isAuthed:  false,
+  isLoading: false,
+  authError: null,
   profile: {
-    name: 'Алексей Лебедев',
-    username: '@debtnet_user',
-    phone: '+375 29 123-45-67',
+    userId: '',
+    username: '',
     defaultCurrency: 'BYN',
-    isPremium: true,
+    isPremium: false,
     pushEnabled: true,
-    reminderDays: 3,
   },
-  contacts: INITIAL_CONTACTS,
-  debts: INITIAL_DEBTS,
-  groups: INITIAL_GROUPS,
+  summary:  { balance: 0, total_credit: 0, total_debt: 0 },
+  debtors:  [],
+  contacts: [],
 
-  updateProfile: (data) =>
-    set(s => ({ profile: { ...s.profile, ...data } })),
-
-  addContact: (name, phone, messenger, handle) =>
-    set(s => ({
-      contacts: [...s.contacts, {
-        id: genId(),
-        name,
-        phone,
-        messenger,
-        messengerHandle: handle,
-        initials: initials(name),
-        color: CONTACT_COLORS[s.contacts.length % CONTACT_COLORS.length],
-        inApp: false,
-      }],
-    })),
-
-  addDebt: (debt) =>
-    set(s => ({
-      debts: [{ ...debt, id: genId(), createdAt: new Date().toISOString().slice(0, 10) }, ...s.debts],
-    })),
-
-  closeDebt: (id) =>
-    set(s => ({
-      debts: s.debts.map(d => d.id === id ? { ...d, status: 'closed', closedAt: new Date().toISOString().slice(0, 10) } : d),
-    })),
-
-  confirmDebt: (id) =>
-    set(s => ({
-      debts: s.debts.map(d => d.id === id ? { ...d, status: 'confirmed' } : d),
-    })),
-
-  rejectDebt: (id) =>
-    set(s => ({ debts: s.debts.filter(d => d.id !== id) })),
-
-  addGroup: (name, emoji, currency, memberIds) =>
-    set(s => ({
-      groups: [...s.groups, { id: genId(), name, emoji, currency, memberIds, totalBalance: 0, createdAt: new Date().toISOString().slice(0, 10) }],
-    })),
-
-  getIncome: (currency) => {
-    const debts = get().debts.filter(d => d.direction === 'give' && d.status === 'confirmed');
-    if (currency) return debts.filter(d => d.currency === currency).reduce((sum, d) => sum + (d.amount ?? 0), 0);
-    return debts.reduce((sum, d) => sum + (d.amount ?? 0), 0);
+  // ── Init: called on app start ───────────────
+  init: async () => {
+    const t = await loadTokens();
+    if (!t) return;
+    setMemTokens(t);
+    set({ isAuthed: true, profile: { ...get().profile, userId: t.user_id } });
+    await get().refresh();
+    await get().loadContacts();
+    get()._startSSE();
   },
 
-  getExpenses: (currency) => {
-    const debts = get().debts.filter(d => d.direction === 'take' && d.status === 'confirmed');
-    if (currency) return debts.filter(d => d.currency === currency).reduce((sum, d) => sum + (d.amount ?? 0), 0);
-    return debts.reduce((sum, d) => sum + (d.amount ?? 0), 0);
+  // ── Auth ─────────────────────────────────────
+  doRegister: async (email, password, username) => {
+    set({ isLoading: true, authError: null });
+    try {
+      const t = await register({ email, password, username });
+      set({
+        isAuthed: true,
+        isLoading: false,
+        profile: { ...get().profile, userId: t.user_id, username: username || email.split('@')[0] },
+      });
+      await get().refresh();
+      await get().loadContacts();
+      get()._startSSE();
+    } catch (e: unknown) {
+      set({ isLoading: false, authError: (e as Error).message });
+    }
   },
 
-  getPendingDebts: () => get().debts.filter(d => d.status === 'pending'),
-  getClosedDebts: () => get().debts.filter(d => d.status === 'closed'),
-}));
+  doLogin: async (email, password) => {
+    set({ isLoading: true, authError: null });
+    try {
+      const t = await login({ email, password });
+      set({
+        isAuthed: true,
+        isLoading: false,
+        profile: { ...get().profile, userId: t.user_id, username: email.split('@')[0] },
+      });
+      await get().refresh();
+      await get().loadContacts();
+      get()._startSSE();
+    } catch (e: unknown) {
+      set({ isLoading: false, authError: (e as Error).message });
+    }
+  },
+
+  doLogout: async () => {
+    sseClient.disconnect();
+    await authLogout();
+    set({
+      isAuthed: false,
+      summary:  { balance: 0, total_credit: 0, total_debt: 0 },
+      debtors:  [],
+      contacts: [],
+      profile:  { userId: '', username: '', defaultCurrency: 'BYN', isPremium: false, pushEnabled: true },
+    });
+  },
+
+  clearError: () => set({ authError: null }),
+
+  // ── Data ──────────────────────────────────────
+  refresh: async () => {
+    try {
+      const [summary, rawDebtors] = await Promise.all([getSummary(), getDebtors()]);
+      const debtors: Debtor[] = rawDebtors.map(d => {
+        const n = normalizeDebtor(d);
+        return { ...n, color: colorFor(n.id), initials: ini(n.username) };
+      });
+      set({ summary, debtors });
+      // merge debtors into contacts if not already there
+      const existing = get().contacts.map(c => c.id);
+      const newFromDebtors: Contact[] = debtors
+        .filter(d => !existing.includes(d.id))
+        .map(d => ({ id: d.id, username: d.username, source: 'loan' as const, color: d.color, initials: d.initials }));
+      if (newFromDebtors.length) set(s => ({ contacts: [...s.contacts, ...newFromDebtors] }));
+    } catch {}
+  },
+
+  loadContacts: async () => {
+    try {
+      const raw: ApiContact[] = await getContacts();
+      const contacts: Contact[] = raw.map(c => ({
+        id:       c.id,
+        username: c.username,
+        source:   c.source,
+        color:    colorFor(c.id),
+        initials: ini(c.username),
+      }));
+      set({ contacts });
+    } catch {}
+  },
+
+  submitLoan: async (receiverId, amount, description) => {
+    await createLoan({ receiver_id: receiverId, amount, description });
+    await get().refresh();
+  },
+
+  generateInvite: async () => {
+    const data = await createInvite();
+    const appUrl = `debtnet://invite?token=${encodeURIComponent(data.token)}`;
+    return { appUrl, tgUrl: data.tg_invite_url };
+  },
+
+  acceptInviteToken: async (token) => {
+    const data = await acceptInvite(token);
+    await get().loadContacts();
+    return data.contact?.username ?? '';
+  },
+
+  deleteContact: async (userId) => {
+    await removeContact(userId);
+    set(s => ({ contacts: s.contacts.filter(c => c.id !== userId) }));
+  },
+
+  // ── SSE (private) ─────────────────────────────
+  _startSSE: () => {
+    sseClient.setReconnectHandler(() => {
+      get().refresh();
+      get().loadContacts();
+    });
+    sseClient.on('loan.transaction.created', () => get().refresh());
+    sseClient.on('contact.added',   () => get().loadContacts());
+    sseClient.on('contact.removed', (env) => {
+      const uid = env.data.contact_user_id as string;
+      if (uid) set(s => ({ contacts: s.contacts.filter(c => c.id !== uid) }));
+    });
+    sseClient.connect();
+  },
+} as StoreState & { _startSSE: () => void }));
