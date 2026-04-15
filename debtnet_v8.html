@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+body{display:flex;justify-content:center;padding:20px 0;background:#1a1a2e;}
+.phone{width:375px;background:#0A0A0F;border-radius:44px;border:2px solid #2A2A3A;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.8);}
+.screen{height:760px;overflow:hidden;position:relative;}
+.pg,.sub,.mod,.pb{position:absolute;inset:0;display:none;flex-direction:column;}
+.pg{bottom:68px;}
+.on{display:flex!important;}
+.scr{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;}
+.tb{position:absolute;bottom:0;left:0;right:0;height:68px;background:#0A0A0F;border-top:.5px solid #2A2A38;display:flex;z-index:100;padding:6px 0 10px;}
+.ti{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;}
+.card{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:8px;border:1px solid #2A2A38;}
+.mrow{background:#fff;border-radius:10px;padding:11px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.mico{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.fblock{background:#13131A;border-radius:14px;padding:14px;margin-bottom:12px;border:1px solid #2A2A38;}
+.flabel{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;}
+.finp{width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:12px;padding:12px 14px;color:#1A1A1A;font-size:14px;outline:none;font-family:inherit;}
+.finp::placeholder{color:#aaa;}
+.mbtn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px;background:#1C1C28;border:2px solid #2A2A38;border-radius:12px;cursor:pointer;}.mbtn.row{flex-direction:row;gap:6px;}
+.mbtn.act{background:#EEF0FF;border-color:#5B4FE8;}
+.mbtn span{font-size:9px;font-weight:600;color:#6B6B80;white-space:nowrap;}
+.mbtn.act span{color:#5B4FE8;}.mbtn.row span{font-size:13px;font-weight:700;}
+.hbtn{width:36px;height:36px;min-width:36px;border-radius:9px;background:#10B981;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
+.toast{position:absolute;bottom:76px;left:50%;transform:translateX(-50%);background:rgba(10,10,15,.95);color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9999;max-width:320px;text-align:center;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body>
+<div class="phone"><div class="screen" id="APP">
+
+<!-- ══════════ ГЛАВНАЯ ══════════ -->
+<div class="pg on" id="pg-home">
+  <div style="background:#5B4FE8;padding:16px 18px;flex-shrink:0;">
+    <div style="font-size:19px;font-weight:700;color:#fff;"><span id="h-greeting">Привет 👋</span></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:1px;">Твой финансовый учёт</div>
+  </div>
+  <div class="scr">
+    <!-- Дашборд -->
+    <div style="background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:12px 14px;margin:10px 18px 0;position:relative;display:flex;gap:10px;cursor:pointer;" onclick="goTab('balance')">
+      <button onclick="event.stopPropagation();openSub('sub-dashset')" style="position:absolute;top:8px;right:8px;width:28px;height:28px;background:#10B981;border:none;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="white"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/></svg>
+      </button>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:800;color:#fff;margin-bottom:2px;">Чистый баланс</div>
+        <div id="h-net" style="font-size:24px;font-weight:800;color:#34D399;margin-bottom:8px;">—</div>
+        <div id="h-rows" style="display:flex;flex-direction:column;gap:4px;"></div>
+      </div>
+      <div style="width:1px;background:rgba(255,255,255,.18);flex-shrink:0;"></div>
+      <div style="min-width:86px;display:flex;flex-direction:column;padding-top:32px;">
+        <div style="color:#fff;font-size:10px;font-weight:800;">Мне должны</div><div id="h-owe-me" style="font-size:13px;font-weight:800;color:#34D399;margin-bottom:5px;">—</div>
+        <div style="height:1px;background:rgba(255,255,255,.15);margin-bottom:5px;"></div>
+        <div style="color:#fff;font-size:10px;font-weight:800;">Я должен</div><div id="h-i-owe" style="font-size:13px;font-weight:800;color:#F87171;margin-bottom:5px;">—</div>
+      </div>
+    </div>
+    
+    <!-- Дать/Взять -->
+    <div style="padding:10px 16px 0;display:flex;gap:8px;">
+      <button onclick="openModal('give')" style="flex:1;border-radius:12px;padding:11px;background:#5B4FE8;border:none;cursor:pointer;color:#fff;font-size:14px;font-weight:700;">Дать</button>
+      <button onclick="openModal('take')" style="flex:1;border-radius:12px;padding:11px;background:#10B981;border:none;cursor:pointer;color:#fff;font-size:14px;font-weight:700;">Взять</button>
+    </div>
+    <div style="padding:10px 16px 20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="font-size:14px;font-weight:700;color:#F0F0F8;">Последние операции</span><span onclick="goTab('balance')" style="font-size:12px;color:#5B4FE8;cursor:pointer;">Все →</span></div>
+      <div id="h-recent"></div>
+                      </div>
+  </div>
+</div>
+
+<!-- ══════════ БАЛАНС ══════════ -->
+<div class="pg" id="pg-balance">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:26px;font-weight:800;color:#fff;">Баланс</span>
+    <button onclick="openSub('sub-pdf')" class="hbtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+  </div>
+  <div style="padding:10px 16px;display:flex;gap:12px;flex-shrink:0;">
+    <div style="flex:1;background:#13131A;border-radius:14px;padding:10px 12px;border:1px solid #2A2A38;"><div style="font-size:11px;font-weight:800;color:#F0F0F8;margin-bottom:4px;">Мне должны</div><div id="b-owe-me" style="font-size:11px;font-weight:700;color:#34D399;">—</div></div>
+    <div style="flex:1;background:#13131A;border-radius:14px;padding:10px 12px;border:1px solid #2A2A38;"><div style="font-size:11px;font-weight:800;color:#F0F0F8;margin-bottom:4px;">Я должен</div><div id="b-i-owe" style="font-size:11px;font-weight:700;color:#F87171;">—</div></div>
+  </div>
+  <div style="display:flex;background:#13131A;border-bottom:.5px solid #2A2A38;flex-shrink:0;">
+    <div onclick="setBT('bal')" id="bt-bal" style="flex:1;display:flex;align-items:center;justify-content:center;padding:11px 4px;gap:3px;cursor:pointer;font-size:11px;font-weight:600;color:#7C6EF0;border-bottom:2.5px solid #5B4FE8;white-space:nowrap;">Баланс<span id="bt-bal-badge" style="background:rgba(91,79,232,.14);color:#7C6EF0;font-size:10px;padding:1px 5px;border-radius:8px;display:none;"></span></div>
+    <div onclick="setBT('inc')" id="bt-inc" style="flex:1;display:flex;align-items:center;justify-content:center;padding:11px 4px;gap:3px;cursor:pointer;font-size:11px;font-weight:600;color:#6B6B80;border-bottom:2.5px solid transparent;white-space:nowrap;">Доходы<span id="bt-inc-badge" style="background:rgba(16,185,129,.14);color:#34D399;font-size:10px;padding:1px 5px;border-radius:8px;display:none;"></span></div>
+    <div onclick="setBT('exp')" id="bt-exp" style="flex:1;display:flex;align-items:center;justify-content:center;padding:11px 4px;gap:3px;cursor:pointer;font-size:11px;font-weight:600;color:#6B6B80;border-bottom:2.5px solid transparent;white-space:nowrap;">Расходы<span id="bt-exp-badge" style="background:rgba(239,68,68,.14);color:#F87171;font-size:10px;padding:1px 5px;border-radius:8px;display:none;"></span></div>
+    <div onclick="setBT('pen')" id="bt-pen" style="flex:1;display:flex;align-items:center;justify-content:center;padding:11px 4px;gap:3px;cursor:pointer;font-size:11px;font-weight:600;color:#6B6B80;border-bottom:2.5px solid transparent;white-space:nowrap;">Ожидают<span id="bt-pen-badge" style="background:rgba(245,158,11,.14);color:#FBB147;font-size:10px;padding:1px 5px;border-radius:8px;display:none;"></span></div>
+  </div>
+  <div class="scr" style="padding:14px;">
+    <div id="bc-bal">
+      <div onclick="openSub('sub-debt1')" class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;"><div style="width:38px;height:38px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">АП</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#F0F0F8;">Артём Петров</div><div style="font-size:11px;color:#34D399;">должен вам</div></div><div style="font-size:13px;font-weight:700;color:#34D399;">+300 Br</div><span style="color:#6B6B80;margin-left:4px;">›</span></div>
+      <div onclick="openSub('sub-debt2')" class="card" style="display:flex;align-items:center;gap:10px;cursor:pointer;"><div style="width:38px;height:38px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">МИ</div><div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#F0F0F8;">Мария Иванова</div><div style="font-size:11px;color:#34D399;">должна вам</div></div><div style="font-size:13px;font-weight:700;color:#34D399;">+105 Br</div><span style="color:#6B6B80;margin-left:4px;">›</span></div>
+    </div>
+    <div id="bc-inc" style="display:none;"><div class="card" style="display:flex;align-items:center;gap:10px;"><div style="width:38px;height:38px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">АП</div><div style="flex:1;"><div style="font-size:13px;color:#F0F0F8;">Артём Петров · Займ</div><div style="font-size:11px;color:#6B6B80;">5 мар</div></div><div style="font-size:14px;font-weight:700;color:#34D399;">+300 Br</div></div></div>
+    <div id="bc-exp" style="display:none;"><div class="card" style="display:flex;align-items:center;gap:10px;"><div style="width:38px;height:38px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">ДС</div><div style="flex:1;"><div style="font-size:13px;color:#F0F0F8;">Дмитрий Смирнов · Билеты</div></div><div style="font-size:14px;font-weight:700;color:#F87171;">-150 Br</div></div></div>
+    <div id="bc-pen" style="display:none;">
+      <div class="card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><div style="width:38px;height:38px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">ЕВ</div><div style="flex:1;"><div style="font-size:13px;color:#F0F0F8;">Елена Волкова</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:#34D399;">+45 Br</div><span style="background:rgba(245,158,11,.13);color:#FBB147;font-size:9px;padding:1px 6px;border-radius:7px;">Ожидает</span></div></div><div style="display:flex;gap:8px;border-top:1px solid #2A2A38;padding-top:10px;"><button onclick="toast('❌ Отклонён')" style="flex:1;padding:9px;border-radius:10px;background:#EF4444;border:none;color:#fff;font-weight:700;font-size:13px;cursor:pointer;">Отклонить</button><button onclick="toast('✓ Подтверждён')" style="flex:1;padding:9px;border-radius:10px;background:#10B981;border:none;color:#fff;font-weight:700;font-size:13px;cursor:pointer;">Подтвердить</button></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ГРУППЫ ══════════ -->
+<div class="pg" id="pg-groups">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:26px;font-weight:800;color:#fff;">Группы</span>
+    <button onclick="openSub('sub-newgroup')" class="hbtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+  </div>
+  <div class="scr" style="padding:14px;">
+    <div onclick="openSub('sub-g1')" class="card" style="cursor:pointer;"><div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:12px;background:rgba(91,79,232,.12);display:flex;align-items:center;justify-content:center;font-size:20px;">🏖️</div><div style="flex:1;"><div style="font-size:15px;font-weight:700;color:#5B4FE8;">Друзья с дачи</div><div style="font-size:11px;color:#6B6B80;">4 участника · BYN</div></div><div style="font-size:15px;font-weight:700;color:#34D399;">+126 Br</div></div><div style="display:flex;align-items:center;"><div style="width:26px;height:26px;border-radius:50%;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;">АЛ</div><div style="width:26px;height:26px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;margin-left:-7px;">МИ</div><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;margin-left:-7px;">ДС</div><span style="margin-left:auto;font-size:11px;font-weight:600;color:#34D399;">Активна</span></div></div>
+    <div onclick="openSub('sub-g2')" class="card" style="cursor:pointer;"><div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:12px;background:rgba(91,79,232,.12);display:flex;align-items:center;justify-content:center;font-size:20px;">💼</div><div style="flex:1;"><div style="font-size:15px;font-weight:700;color:#5B4FE8;">Рабочие обеды</div><div style="font-size:11px;color:#6B6B80;">3 участника · USD</div></div><div style="font-size:15px;font-weight:700;color:#F87171;">-54 $</div></div><div style="display:flex;align-items:center;"><div style="width:26px;height:26px;border-radius:50%;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;">АЛ</div><div style="width:26px;height:26px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;margin-left:-7px;">АП</div><span style="margin-left:auto;font-size:11px;font-weight:600;color:#34D399;">Активна</span></div></div>
+  </div>
+</div>
+
+<!-- ══════════ КОНТАКТЫ ══════════ -->
+<div class="pg" id="pg-contacts">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-size:22px;font-weight:800;color:#fff;">Контакты</span>
+    <div style="display:flex;gap:7px;">
+      <button onclick="loadContactsAPI();updateContactsList();toast('🔄 Обновление...')" class="hbtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+      <button onclick="openSub('sub-invite-contact')" class="hbtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button>
+      <button onclick="toast('📥 Импорт...')" class="hbtn"><svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+    </div>
+  </div>
+  <div style="padding:8px 12px;background:#0A0A0F;flex-shrink:0;"><input oninput="filterContacts(this.value)" placeholder="🔍 Поиск..." style="width:100%;background:#1C1C28;border:1px solid #2A2A38;border-radius:12px;padding:10px 14px;color:#F0F0F8;font-size:14px;outline:none;"/></div>
+  <div class="scr" style="background:#000;padding:8px 12px;" id="contacts-list">
+    <div onclick="openSub('sub-c1')" style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;cursor:pointer;"><div style="width:32px;height:32px;border-radius:50%;background:#F0EEFF;border:2px solid #E0DDFF;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#5B4FE8;">АП</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Александр Петров</div><div style="font-size:11px;color:#888;">Telegram · @alex_p</div></div><span style="color:#ccc;">›</span></div>
+    <div onclick="openSub('sub-c2')" style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;cursor:pointer;"><div style="width:32px;height:32px;border-radius:50%;background:#E8FFF6;border:2px solid #B0EDD8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#10B981;">МИ</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Мария Иванова</div><div style="font-size:11px;color:#888;">WhatsApp</div></div><span style="color:#ccc;">›</span></div>
+    <div onclick="openSub('sub-c3')" style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;cursor:pointer;"><div style="width:32px;height:32px;border-radius:50%;background:#FFF8E8;border:2px solid #FFE0A0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#F59E0B;">ДК</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Дмитрий Козлов</div><div style="font-size:11px;color:#888;">Viber</div></div><span style="color:#ccc;">›</span></div>
+    <div onclick="openSub('sub-c4')" style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;cursor:pointer;"><div style="width:32px;height:32px;border-radius:50%;background:#F3EEFF;border:2px solid #DDD0FF;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#7B519D;">ИН</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Иван Новиков</div><div style="font-size:11px;color:#FBB147;">⚠ Нет в приложении</div></div><button onclick="event.stopPropagation();openSub('sub-invite')" style="padding:4px 10px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:20px;color:#10B981;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;">Пригласить</button></div>
+  </div>
+</div>
+
+<!-- ══════════ ПРОФИЛЬ ══════════ -->
+<div class="pg" id="pg-profile">
+  <div class="scr">
+    <div style="background:#5B4FE8;padding:14px 16px 16px;display:flex;align-items:center;gap:12px;">
+      <div style="width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0;">АЛ</div>
+      <div><div style="font-size:17px;font-weight:800;color:#fff;">Алексей Лебедев</div><div style="font-size:12px;color:rgba(255,255,255,.65);">@debtnet_user</div><div onclick="openSub('sub-premium')" style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:3px 10px;margin-top:5px;cursor:pointer;"><span style="color:#FFD700;font-size:11px;">★</span><span style="font-size:11px;font-weight:600;color:#FFD700;">Premium</span></div></div>
+    </div>
+    <div style="display:flex;gap:8px;padding:10px 12px;">
+      <div style="flex:1;background:#13131A;border-radius:10px;padding:8px 6px;text-align:center;border:1px solid #2A2A38;"><div style="font-size:18px;font-weight:800;color:#F0F0F8;">14</div><div style="font-size:10px;color:#6B6B80;">Операций</div></div>
+      <div onclick="openSub('sub-ref')" style="flex:1;background:#13131A;border-radius:10px;padding:8px 6px;text-align:center;border:1px solid #2A2A38;cursor:pointer;"><div style="font-size:18px;font-weight:800;color:#F0F0F8;">7</div><div style="font-size:10px;color:#6B6B80;">Рефералов</div></div>
+      <div onclick="openSub('sub-premium')" style="flex:1;background:#13131A;border-radius:10px;padding:8px 6px;text-align:center;border:1px solid #2A2A38;cursor:pointer;"><div style="font-size:18px;font-weight:800;color:#FFD700;">★</div><div style="font-size:10px;color:#6B6B80;">Premium</div></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:#6B6B80;text-transform:uppercase;letter-spacing:.8px;padding:0 12px;margin:4px 0 6px;">Аккаунт</div>
+    <div style="padding:0 12px;">
+      <div class="mrow" onclick="openSub('sub-edit')"><div class="mico" style="background:#EEF0FF;">✎</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Редактировать профиль</span><span style="color:#ccc;">›</span></div>
+      <div class="mrow" onclick="openSub('sub-premium')"><div class="mico" style="background:#FFF8E0;">⭐</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Premium подписка</span><span style="font-size:12px;color:#10B981;margin-right:6px;font-weight:600;">Активна</span><span style="color:#ccc;">›</span></div>
+      <div class="mrow" onclick="openSub('sub-currency')"><div class="mico" style="background:#E8FFF0;">💱</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Валюта по умолчанию</span><span style="font-size:12px;color:#888;margin-right:6px;" id="cur-label">BYN</span><span style="color:#ccc;">›</span></div>
+      <div class="mrow" onclick="openSub('sub-ref')"><div class="mico" style="background:#EEF0FF;">👥</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Реферальная программа</span><span style="font-size:12px;color:#888;margin-right:6px;">7 чел.</span><span style="color:#ccc;">›</span></div>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:#6B6B80;text-transform:uppercase;letter-spacing:.8px;padding:0 12px;margin:10px 0 6px;">Приложение</div>
+    <div style="padding:0 12px 24px;">
+      <div class="mrow" onclick="openSub('sub-remind')"><div class="mico" style="background:#FFF8E0;">🔔</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Напоминания о долгах</span><span style="font-size:12px;color:#10B981;margin-right:6px;font-weight:600;">Вкл.</span><span style="color:#ccc;">›</span></div>
+      <div class="mrow" onclick="toast('🔗 Скопировано!')"><div class="mico" style="background:#E8F5FF;">↗</div><span style="flex:1;font-size:13px;color:#1A1A1A;">Поделиться приложением</span><span style="color:#ccc;">›</span></div>
+      <div class="mrow" onclick="openSub('sub-about')"><div class="mico" style="background:#F5F5F5;">ℹ</div><span style="flex:1;font-size:13px;color:#1A1A1A;">О приложении</span><span style="font-size:12px;color:#888;margin-right:6px;">v1.0.0</span><span style="color:#ccc;">›</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ ПОДЭКРАНЫ ══════════ -->
+
+<!-- Настройка дашборда -->
+<div class="sub" id="sub-dashset" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-dashset')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Настройка дашборда</span><div style="width:34px;"></div></div>
+  <div class="scr" style="padding:16px;"><div id="dash-cur"></div><button onclick="closeSub('sub-dashset');toast('✓ Сохранено')" style="width:100%;margin-top:12px;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">✓ Применить</button></div>
+</div>
+
+<!-- PDF меню -->
+<div class="sub" id="sub-pdf" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-pdf')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Скачать отчёт</span><div style="width:34px;"></div></div>
+  <div class="scr" style="padding:16px;">
+    <div style="font-size:11px;font-weight:700;color:#6B6B80;text-transform:uppercase;margin-bottom:8px;">Формат</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <div id="fp-pdf" onclick="selFmt('pdf')" style="flex:1;padding:12px;background:#5B4FE8;border:2px solid #5B4FE8;border-radius:12px;text-align:center;cursor:pointer;"><div style="font-size:20px;">📄</div><div style="font-size:12px;font-weight:700;color:#fff;margin-top:3px;">PDF</div></div>
+      <div id="fp-xlsx" onclick="selFmt('xlsx')" style="flex:1;padding:12px;background:#13131A;border:2px solid #2A2A38;border-radius:12px;text-align:center;cursor:pointer;"><div style="font-size:20px;">📊</div><div style="font-size:12px;font-weight:700;color:#6B6B80;margin-top:3px;">Excel</div></div>
+      <div id="fp-csv" onclick="selFmt('csv')" style="flex:1;padding:12px;background:#13131A;border:2px solid #2A2A38;border-radius:12px;text-align:center;cursor:pointer;"><div style="font-size:20px;">📝</div><div style="font-size:12px;font-weight:700;color:#6B6B80;margin-top:3px;">CSV</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:#6B6B80;text-transform:uppercase;margin-bottom:8px;">Период</div>
+    <div id="pdf-periods" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+    <button onclick="closeSub('sub-pdf');toast('📥 Отчёт скачан')" style="width:100%;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">⬇ Скачать</button>
+  </div>
+</div>
+
+<!-- Операции детали -->
+<div class="sub" id="sub-op1" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-op1')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Детали</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:64px;height:64px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin:0 auto 10px;">МИ</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Мария Иванова</div><div style="font-size:28px;font-weight:800;color:#34D399;margin-top:4px;">+105 Br</div><span style="background:rgba(16,185,129,.13);color:#34D399;font-size:12px;padding:3px 10px;border-radius:20px;">Подтверждён</span></div></div></div>
+<div class="sub" id="sub-op2" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-op2')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Детали</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:64px;height:64px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin:0 auto 10px;">АП</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Артём Петров</div><div style="font-size:28px;font-weight:800;color:#34D399;margin-top:4px;">+300 Br</div></div><button onclick="toast('📩 Напоминание')" style="width:100%;padding:13px;background:#5B4FE8;border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Напомнить</button><button onclick="closeSub('sub-op2');toast('✓ Долг закрыт')" style="width:100%;padding:13px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Закрыть долг</button></div></div>
+<div class="sub" id="sub-op3" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-op3')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Детали</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:64px;height:64px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin:0 auto 10px;">ЕВ</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Елена Волкова</div><div style="font-size:28px;font-weight:800;color:#34D399;margin-top:4px;">+45 Br</div><span style="background:rgba(245,158,11,.13);color:#FBB147;font-size:12px;padding:3px 10px;border-radius:20px;">Ожидает</span></div><div style="display:flex;gap:8px;"><button onclick="closeSub('sub-op3');toast('❌ Отклонён')" style="flex:1;padding:13px;border-radius:14px;background:#EF4444;border:none;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Отклонить</button><button onclick="closeSub('sub-op3');toast('✓ Подтверждён')" style="flex:1;padding:13px;border-radius:14px;background:#10B981;border:none;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">Подтвердить</button></div></div></div>
+
+<!-- Долги -->
+<div class="sub" id="sub-debt1" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-debt1')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Долг с Артёмом</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:64px;height:64px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin:0 auto 10px;">АП</div><div style="font-size:32px;font-weight:800;color:#34D399;margin-top:8px;">+300 Br</div></div><button onclick="toast('📩 Напоминание отправлено')" style="width:100%;padding:13px;background:#5B4FE8;border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">Отправить напоминание</button><button onclick="closeSub('sub-debt1');toast('✓ Долг закрыт')" style="width:100%;padding:13px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Закрыть долг</button></div></div>
+<div class="sub" id="sub-debt2" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-debt2')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Долг с Марией</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:64px;height:64px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;color:#fff;margin:0 auto 10px;">МИ</div><div style="font-size:32px;font-weight:800;color:#34D399;margin-top:8px;">+105 Br</div></div><button onclick="closeSub('sub-debt2');toast('✓ Долг закрыт')" style="width:100%;padding:13px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">Закрыть долг</button></div></div>
+
+<!-- Группы -->
+<div class="sub" id="sub-g1" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;">
+    <button onclick="closeSub('sub-g1')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button>
+    <span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">🏖️ Друзья с дачи</span>
+    <button onclick="openGrpModal(['МИ','АП','ДС'])" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+  </div>
+  <div class="scr" style="padding:14px;">
+    <!-- Баланс группы -->
+    <div style="background:#13131A;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #2A2A38;">
+      <div style="font-size:11px;font-weight:700;color:#6B6B80;text-align:center;margin-bottom:4px;">Общий аванс · BYN</div>
+      <div style="font-size:32px;font-weight:800;color:#34D399;text-align:center;">+126 Br</div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <div style="flex:1;background:#0A0A0F;border-radius:10px;padding:8px;text-align:center;border:1px solid #2A2A38;">
+          <div style="font-size:10px;color:#6B6B80;margin-bottom:2px;">Мне должны</div>
+          <div style="font-size:13px;font-weight:700;color:#34D399;">+200 Br</div>
+        </div>
+        <div style="flex:1;background:#0A0A0F;border-radius:10px;padding:8px;text-align:center;border:1px solid #2A2A38;">
+          <div style="font-size:10px;color:#6B6B80;margin-bottom:2px;">Я должен</div>
+          <div style="font-size:13px;font-weight:700;color:#F87171;">-74 Br</div>
+        </div>
+      </div>
+    </div>
+    <!-- Участники и кто сколько должен -->
+    <div style="background:#1C1C28;border-radius:12px;border:1px solid #2A2A38;margin-bottom:12px;overflow:hidden;">
+      <div style="padding:7px 12px;border-bottom:1px solid #2A2A38;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;font-weight:700;color:#F0F0F8;">Участники</span>
+        <span style="font-size:10px;color:#6B6B80;">4 чел.</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #2A2A38;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px;color:#fff;flex-shrink:0;">ВЫ</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#F0F0F8;">Вы</div><div style="font-size:10px;color:#6B6B80;">Организатор</div></div>
+        <div style="font-size:12px;font-weight:700;color:#10B981;">+126 Br</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #2A2A38;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#10B981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px;color:#fff;flex-shrink:0;">МИ</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#F0F0F8;">Мария Иванова</div><div style="font-size:10px;color:#10B981;">должна вам</div></div>
+        <div style="font-size:12px;font-weight:700;color:#10B981;">+105 Br</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #2A2A38;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px;color:#fff;flex-shrink:0;">АП</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#F0F0F8;">Артём Петров</div><div style="font-size:10px;color:#10B981;">должен вам</div></div>
+        <div style="font-size:12px;font-weight:700;color:#10B981;">+95 Br</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:9px;color:#fff;flex-shrink:0;">ДС</div>
+        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#F0F0F8;">Дмитрий Смирнов</div><div style="font-size:10px;color:#EF4444;">вы должны</div></div>
+        <div style="font-size:12px;font-weight:700;color:#EF4444;">-74 Br</div>
+      </div>
+    </div>
+    <!-- История трат -->
+    <div style="font-size:13px;font-weight:700;color:#F0F0F8;margin:12px 0 8px;">История трат</div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;">МИ</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Мария → вам</div><div style="font-size:11px;color:#888;">Продукты · 5 мар</div></div>
+      <div style="font-size:13px;font-weight:700;color:#10B981;">+105 Br</div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;">АП</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Артём → вам</div><div style="font-size:11px;color:#888;">Шашлык · 3 мар</div></div>
+      <div style="font-size:13px;font-weight:700;color:#10B981;">+95 Br</div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:34px;height:34px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;">ВЫ</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">Вы → Дмитрию</div><div style="font-size:11px;color:#888;">Дрова · 1 мар</div></div>
+      <div style="font-size:13px;font-weight:700;color:#EF4444;">-74 Br</div>
+    </div>
+  </div>
+</div>
+<div class="sub" id="sub-g2" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;">
+    <button onclick="closeSub('sub-g2')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button>
+    <span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">💼 Рабочие обеды</span>
+    <button onclick="openModal('give')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button>
+  </div>
+  <div class="scr" style="padding:14px;">
+    <div style="background:#13131A;border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid #2A2A38;">
+      <div style="font-size:11px;font-weight:700;color:#6B6B80;text-align:center;margin-bottom:4px;">Общий аванс · USD</div>
+      <div style="font-size:32px;font-weight:800;color:#F87171;text-align:center;">-54 $</div>
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <div style="flex:1;background:#0A0A0F;border-radius:10px;padding:8px;text-align:center;border:1px solid #2A2A38;">
+          <div style="font-size:10px;color:#6B6B80;margin-bottom:2px;">Мне должны</div>
+          <div style="font-size:13px;font-weight:700;color:#34D399;">+10 $</div>
+        </div>
+        <div style="flex:1;background:#0A0A0F;border-radius:10px;padding:8px;text-align:center;border:1px solid #2A2A38;">
+          <div style="font-size:10px;color:#6B6B80;margin-bottom:2px;">Я должен</div>
+          <div style="font-size:13px;font-weight:700;color:#F87171;">-64 $</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#F0F0F8;margin-bottom:8px;">История трат</div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:#F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">АП</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#1A1A1A;">Артём → вам</div><div style="font-size:11px;color:#888;">Кофе · 7 мар</div></div>
+      <div style="font-size:13px;font-weight:700;color:#10B981;">+10 $</div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">ВЫ</div>
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#1A1A1A;">Вы → Артёму</div><div style="font-size:11px;color:#888;">Обед · 6 мар</div></div>
+      <div style="font-size:13px;font-weight:700;color:#EF4444;">-64 $</div>
+    </div>
+  </div>
+</div>
+
+<!-- Новая группа -->
+<div class="sub" id="sub-newgroup" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-newgroup')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Новая группа</span><div style="width:34px;"></div></div>
+  <div class="scr" style="padding:16px;">
+    <div class="fblock"><div class="flabel">Название группы</div><input id="grp-name" class="finp" placeholder="Например: Поездка в Минск"/></div>
+    <div class="fblock"><div class="flabel">Валюта группы</div>
+      <select style="width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:12px;padding:13px 14px;color:#1A1A1A;font-size:14px;outline:none;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%228%22 viewBox=%220 0 12 8%22><path d=%22M1 1l5 5 5-5%22 stroke=%22%235B4FE8%22 stroke-width=%222%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>');background-repeat:no-repeat;background-position:right 14px center;">
+        <option>BYN — Белорусский рубль (Br)</option><option>USD — Доллар США ($)</option><option>EUR — Евро (€)</option><option>USDT — Tether (₮)</option><option>BTC — Биткоин (₿)</option>
+      </select>
+    </div>
+    <div class="fblock"><div class="flabel">Участники</div><div id="grp-contacts"></div></div>
+    <div style="background:#13131A;border-radius:12px;padding:10px 14px;margin-bottom:14px;border:1px solid #2A2A38;"><div style="font-size:12px;color:#6B6B80;margin-bottom:4px;">Выбрано: <span id="sel-count" style="color:#5B4FE8;font-weight:700;">0</span></div><div id="sel-names" style="font-size:12px;color:#F0F0F8;"></div></div>
+    <button onclick="createGroup()" style="width:100%;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Создать группу</button>
+  </div>
+</div>
+
+<!-- Контакты детали -->
+<div class="sub" id="sub-c1" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-c1')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Александр Петров</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:72px;height:72px;border-radius:50%;background:#F0EEFF;border:3px solid #5B4FE8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#5B4FE8;margin:0 auto 10px;">АП</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Александр Петров</div><div style="font-size:12px;color:#6B6B80;margin-top:4px;">Telegram · @alex_p</div></div><div class="card"><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#6B6B80;font-size:13px;">Баланс</span><span style="color:#34D399;font-size:13px;font-weight:600;">+300 Br</span></div></div><div style="display:flex;gap:8px;margin-top:12px;"><button onclick="openModal('give')" style="flex:1;padding:12px;background:#5B4FE8;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;">Дать в долг</button><button onclick="openModal('take')" style="flex:1;padding:12px;background:#10B981;border:none;border-radius:12px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;">Взять в долг</button></div></div></div>
+<div class="sub" id="sub-c2" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-c2')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Мария Иванова</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;margin-bottom:16px;"><div style="width:72px;height:72px;border-radius:50%;background:#E8FFF6;border:3px solid #10B981;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#10B981;margin:0 auto 10px;">МИ</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Мария Иванова</div></div><div class="card"><div style="display:flex;justify-content:space-between;padding:7px 0;"><span style="color:#6B6B80;font-size:13px;">Баланс</span><span style="color:#34D399;font-size:13px;font-weight:600;">+105 Br</span></div></div></div></div>
+<div class="sub" id="sub-c3" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-c3')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Дмитрий Козлов</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;"><div style="width:72px;height:72px;border-radius:50%;background:#FFF8E8;border:3px solid #F59E0B;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#F59E0B;margin:0 auto 10px;">ДК</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Дмитрий Козлов</div></div></div></div>
+<div class="sub" id="sub-c4" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-c4')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Иван Новиков</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;"><div style="width:72px;height:72px;border-radius:50%;background:#F3EEFF;border:3px solid #7B519D;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px;color:#7B519D;margin:0 auto 10px;">ИН</div><div style="font-size:18px;font-weight:800;color:#F0F0F8;">Иван Новиков</div><div style="font-size:12px;color:#FBB147;margin-top:4px;">⚠ Нет в приложении</div></div></div></div>
+
+<!-- Добавить контакт -->
+<div class="sub" id="sub-addcontact" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-addcontact')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Новый контакт</span><div style="width:34px;"></div></div>
+  <div class="scr" style="padding:16px;">
+    <div class="fblock"><div class="flabel">Имя и фамилия</div><input class="finp" placeholder="Иван Иванов"/></div>
+    <div class="fblock"><div class="flabel">Телефон</div><input class="finp" placeholder="+375 29 000-00-00" type="tel"/></div>
+    <div class="fblock">
+      <div class="flabel">Мессенджер</div>
+      <div style="display:flex;gap:8px;">
+        <div class="mbtn" id="mb-tg" onclick="selMsg('tg')"><svg width="26" height="26" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#29B6F6"/><path d="M10 23l24-9-4 22-8-7-4 4-2-7 14-11-15 8z" fill="white"/></svg><span>Telegram</span></div>
+        <div class="mbtn" id="mb-vb" onclick="selMsg('vb')"><svg width="26" height="26" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#7B519D"/><ellipse cx="24" cy="22" rx="10" ry="9" fill="white" opacity=".9"/></svg><span>Viber</span></div>
+        <div class="mbtn" id="mb-wa" onclick="selMsg('wa')"><svg width="26" height="26" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#25D366"/><path d="M34 14c-5.5-5.5-14.5-5.5-20 0-5.5 5.5-5.5 14.5 0 20l-3 9 9-3c5.5 3 12 1.5 16-2.5 5.5-5.5 5.5-18-.5-23.5z" fill="white" opacity=".9"/></svg><span>WhatsApp</span></div>
+        <div class="mbtn" id="mb-sg" onclick="selMsg('sg')"><svg width="26" height="26" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#3A76F0"/><circle cx="24" cy="24" r="10" fill="white" opacity=".9"/><circle cx="24" cy="24" r="4" fill="#3A76F0"/></svg><span>Signal</span></div>
+        <div class="mbtn" id="mb-em" onclick="selMsg('em')"><svg width="26" height="26" viewBox="0 0 48 48"><circle cx="24" cy="24" r="24" fill="#EA4335"/><rect x="10" y="15" width="28" height="18" rx="3" fill="white" opacity=".95"/><path d="M10 17l14 10 14-10" stroke="#EA4335" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg><span>E-mail</span></div>
+      </div>
+      <div id="nick-wrap" style="display:none;margin-top:12px;"><div id="nick-lbl" style="font-size:12px;font-weight:600;color:#6B6B80;margin-bottom:6px;"></div><input id="nick-inp" class="finp" placeholder="@username"/></div>
+    </div>
+    <button onclick="closeSub('sub-addcontact');toast('✓ Контакт добавлен')" style="width:100%;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Добавить контакт</button>
+  </div>
+</div>
+
+<!-- Пригласить -->
+<div class="sub" id="sub-invite" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-invite')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Пригласить</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div onclick="toast('✓ WhatsApp')" style="display:flex;align-items:center;gap:14px;padding:14px;background:#13131A;border-radius:14px;margin-bottom:8px;border:1px solid #2A2A38;cursor:pointer;"><div style="width:44px;height:44px;border-radius:12px;background:#25D366;display:flex;align-items:center;justify-content:center;font-size:22px;">📱</div><span style="font-size:15px;font-weight:600;color:#F0F0F8;">WhatsApp</span><span style="margin-left:auto;color:#6B6B80;">›</span></div><div onclick="toast('✓ Telegram')" style="display:flex;align-items:center;gap:14px;padding:14px;background:#13131A;border-radius:14px;margin-bottom:8px;border:1px solid #2A2A38;cursor:pointer;"><div style="width:44px;height:44px;border-radius:12px;background:#2AABEE;display:flex;align-items:center;justify-content:center;font-size:22px;">✈️</div><span style="font-size:15px;font-weight:600;color:#F0F0F8;">Telegram</span><span style="margin-left:auto;color:#6B6B80;">›</span></div><div onclick="toast('🔗 Скопировано')" style="display:flex;align-items:center;gap:14px;padding:14px;background:#13131A;border-radius:14px;border:1px solid #2A2A38;cursor:pointer;"><div style="width:44px;height:44px;border-radius:12px;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-size:22px;">🔗</div><span style="font-size:15px;font-weight:600;color:#F0F0F8;">Скопировать ссылку</span><span style="margin-left:auto;color:#6B6B80;">›</span></div></div></div>
+
+<!-- Профиль подэкраны -->
+<div class="sub" id="sub-edit" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-edit')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Редактировать профиль</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div class="fblock"><div class="flabel">Имя</div><input value="Алексей Лебедев" class="finp"/></div><div class="fblock"><div class="flabel">Юзернейм</div><input value="@debtnet_user" class="finp"/></div><button onclick="closeSub('sub-edit');toast('✓ Сохранено')" style="width:100%;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Сохранить</button></div></div>
+
+<!-- ══ PREMIUM — весь в один экран ══ -->
+<div class="sub" id="sub-premium" style="background:#0A0A0F;z-index:200;overflow:hidden;">
+  <div style="background:#5B4FE8;padding:12px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;">
+    <button onclick="closeSub('sub-premium')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button>
+    <span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Premium подписка</span>
+    <div style="width:34px;"></div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;padding:10px 14px 10px;gap:8px;overflow:hidden;">
+    <!-- Заголовок -->
+    <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(91,79,232,.18),rgba(16,185,129,.12));border-radius:14px;padding:10px 14px;border:1px solid rgba(91,79,232,.25);flex-shrink:0;">
+      <div style="font-size:30px;line-height:1;">⭐</div>
+      <div><div style="font-size:16px;font-weight:800;color:#F0F0F8;">DebtNet Premium</div><div style="font-size:11px;color:#6B6B80;margin-top:1px;">Разблокируй все возможности</div></div>
+    </div>
+    <!-- Тарифы -->
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <div id="pl-m" onclick="selPlan('m')" style="flex:1;background:#13131A;border-radius:12px;padding:10px;border:2px solid #2A2A38;text-align:center;cursor:pointer;">
+        <div style="font-size:11px;color:#6B6B80;margin-bottom:2px;">1 месяц</div>
+        <div style="font-size:22px;font-weight:800;color:#5B4FE8;">1 $</div>
+        <div style="font-size:10px;color:#6B6B80;margin-top:1px;">1 $/мес</div>
+      </div>
+      <div id="pl-y" onclick="selPlan('y')" style="flex:1;background:#13131A;border-radius:12px;padding:10px;border:2px solid #5B4FE8;text-align:center;cursor:pointer;position:relative;">
+        <div style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#5B4FE8,#10B981);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">🔥 -17%</div>
+        <div style="font-size:11px;color:#6B6B80;margin-bottom:2px;margin-top:4px;">1 год</div>
+        <div style="font-size:22px;font-weight:800;color:#5B4FE8;">10 $</div>
+        <div style="font-size:10px;color:#10B981;margin-top:1px;font-weight:600;">0.83 $/мес</div>
+      </div>
+    </div>
+    <!-- Фичи блок -->
+    <div style="background:#13131A;border-radius:14px;border:1px solid #2A2A38;overflow:hidden;flex:1;display:flex;flex-direction:column;">
+      <div style="padding:8px 14px;border-bottom:1px solid #2A2A38;flex-shrink:0;">
+        <div style="font-size:12px;font-weight:800;color:#F0F0F8;">Что даёт Premium</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #1C1C28;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🔓</div>
+          <div><div style="font-size:12px;font-weight:700;color:#F0F0F8;">Дата возврата</div><div style="font-size:10px;color:#6B6B80;">Выставляй дату возврата для каждого долга</div></div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #1C1C28;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📑</div>
+          <div><div style="font-size:12px;font-weight:700;color:#F0F0F8;">Экспорт в PDF</div><div style="font-size:10px;color:#6B6B80;">Выгрузка истории и очистка архива долгов</div></div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #1C1C28;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(251,177,71,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🔔</div>
+          <div><div style="font-size:12px;font-weight:700;color:#F0F0F8;">Умные пуши</div><div style="font-size:10px;color:#6B6B80;">Авто-напоминания должникам по расписанию</div></div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #1C1C28;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🎨</div>
+          <div><div style="font-size:12px;font-weight:700;color:#F0F0F8;">Групповые чаты 8+</div><div style="font-size:10px;color:#6B6B80;">Группы с неограниченным числом участников</div></div>
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🌍</div>
+          <div><div style="font-size:12px;font-weight:700;color:#F0F0F8;">Все валюты + крипто</div><div style="font-size:10px;color:#6B6B80;">Любая валюта и автоматическая конвертация</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Кнопка + дисклеймер -->
+    <button onclick="toast('🎉 Premium активирован!')" style="width:100%;padding:13px;background:linear-gradient(135deg,#5B4FE8,#10B981);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0;">⭐ Оформить Premium — 10 $</button>
+    <div style="text-align:center;font-size:10px;color:#6B6B80;flex-shrink:0;padding-bottom:2px;">Отмена в любое время · Без скрытых платежей</div>
+  </div>
+</div>
+
+<div class="sub" id="sub-currency" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-currency')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Валюта</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div id="cur-list"></div></div></div>
+
+<div class="sub" id="sub-ref" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-ref')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Реферальная программа</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div class="card" style="text-align:center;margin-bottom:14px;"><div style="font-size:36px;font-weight:800;color:#5B4FE8;">7</div><div style="font-size:13px;color:#6B6B80;margin-top:4px;">приглашённых друзей</div></div><div class="card"><div style="font-size:12px;color:#6B6B80;margin-bottom:8px;">Ваша ссылка</div><div style="display:flex;gap:8px;"><div style="flex:1;background:#0A0A0F;border-radius:10px;padding:10px 12px;font-size:12px;color:#F0F0F8;border:1px solid #2A2A38;">debtnet.app/ref/alex7</div><button onclick="toast('✓ Скопировано!')" style="padding:10px 14px;background:#5B4FE8;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Копировать</button></div></div></div></div>
+
+<div class="sub" id="sub-remind" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-remind')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Напоминания</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div class="card" style="margin-bottom:12px;"><div style="display:flex;align-items:center;justify-content:space-between;"><span style="font-size:14px;font-weight:600;color:#F0F0F8;">Push-уведомления</span><div onclick="this.style.background=this.style.background==='rgb(16, 185, 129)'?'#2A2A38':'#10B981'" style="width:44px;height:24px;border-radius:12px;background:#10B981;position:relative;cursor:pointer;"><div style="position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;"></div></div></div></div><button onclick="closeSub('sub-remind');toast('✓ Сохранено')" style="width:100%;padding:14px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Сохранить</button></div></div>
+
+<div class="sub" id="sub-about" style="background:#0A0A0F;z-index:200;"><div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;"><button onclick="closeSub('sub-about')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">О приложении</span><div style="width:34px;"></div></div><div class="scr" style="padding:16px;"><div style="text-align:center;padding:24px 0;"><div style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#5B4FE8,#10B981);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:36px;">💰</div><div style="font-size:22px;font-weight:800;color:#F0F0F8;">DebtNet</div><div style="font-size:13px;color:#6B6B80;margin-top:4px;">Версия 1.0.0</div></div></div></div>
+
+<!-- ══════════ МОДАЛ НОВАЯ ЗАПИСЬ ══════════ -->
+<div class="mod" id="mod-entry" style="background:rgba(0,0,0,.75);z-index:500;align-items:flex-end;justify-content:center;">
+  <div style="background:#1C1C28;border-radius:22px 22px 0 0;width:100%;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0);">
+    <!-- Хедер -->
+    <div style="background:#5B4FE8;border-radius:22px 22px 0 0;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <button onclick="closeModal()" style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      <span style="font-size:16px;font-weight:800;color:#fff;">Новая запись</span>
+      <div style="width:30px;"></div>
+    </div>
+    <!-- Контент — без скролла, компактный -->
+    <div style="padding:10px 14px 16px;display:flex;flex-direction:column;gap:8px;">
+      <!-- Действие -->
+      <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;">
+        <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Действие</div>
+        <div style="display:flex;gap:6px;">
+          <button id="bg" onclick="setGT('give')" class="mbtn act row" style="flex:1;padding:9px;border-radius:10px;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#5B4FE8"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg><span style="font-size:12px;font-weight:700;">Дать</span></button>
+          <button id="bt" onclick="setGT('take')" class="mbtn row" style="flex:1;padding:9px;border-radius:10px;cursor:pointer;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#6B6B80"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg><span style="font-size:12px;font-weight:700;">Взять</span></button>
+        </div>
+      </div>
+      <!-- Тип -->
+      <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;">
+        <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Тип</div>
+        <div style="display:flex;gap:6px;">
+          <button id="bm" onclick="setType('money')" style="flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:#10B981;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>Деньги</button>
+          <button id="bth" onclick="setType('thing')" style="flex:1;padding:9px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;background:#2A2A38;border:2px solid transparent;color:#6B6B80;display:flex;align-items:center;justify-content:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#6B6B80"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36C18 2.52 15.48 0 12.36 0c-1.71 0-3.22.76-4.27 1.96L12 6H20zm-7.14 0l-3.11-3.63A3.35 3.35 0 007.32 0C4.19 0 1.68 2.52 1.68 4.64c0 .48.11.92.18 1.36H2L1 7v1h22V7l-1-1h-.14zM1 9v11c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V9H1z"/></svg>Вещь</button>
+        </div>
+      </div>
+      <!-- Кому -->
+      <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;">
+        <div id="nlbl" style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Кому даёте</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input id="ninp" placeholder="Введите имя..." style="flex:1;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:9px 12px;color:#1A1A1A;font-size:13px;outline:none;"/>
+          <button onclick="openPB()" style="width:40px;height:40px;min-width:40px;border-radius:10px;background:#5B4FE8;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 0H4v2h16V0zm0 4H4v2h16V4zM4 24h12l4-4V8H4v16zm2-14h12v2H6v-2zm0 4h8v2H6v-2zM14 18v3.5L17.5 18H14z"/></svg></button>
+        </div>
+      </div>
+      <!-- Деньги -->
+      <div id="bmoney">
+        <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Сумма</div>
+          <div style="display:flex;align-items:stretch;border-radius:10px;overflow:hidden;border:1.5px solid #E0E0E0;">
+            <input type="number" id="amount-inp" placeholder="0" style="flex:1;padding:10px 12px;background:#fff;border:none;color:#1A1A1A;font-size:18px;font-weight:700;outline:none;border-right:1px solid #E0E0E0;min-width:0;"/>
+            <select id="currency-sel" style="padding:4px 8px;background:#fff;border:none;color:#5B4FE8;font-size:13px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0;">
+              <option value="BYN">Br</option><option value="USD">$</option><option value="EUR">€</option><option value="USDT">₮</option><option value="BTC">₿</option>
+            </select>
+          </div>
+        </div>
+        <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Комментарий</div>
+          <textarea id="comment-inp" placeholder="За что / на что..." style="width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:9px 12px;color:#1A1A1A;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:50px;"></textarea>
+        </div>
+      </div>
+      <!-- Вещь -->
+      <div id="bthing" style="display:none;">
+        <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Описание вещи</div>
+          <textarea id="desc-inp" placeholder="Например: Книга" style="width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:9px 12px;color:#1A1A1A;font-size:13px;outline:none;font-family:inherit;resize:none;min-height:50px;"></textarea>
+        </div>
+        <div style="background:#13131A;border-radius:12px;padding:10px 12px;border:1px solid #2A2A38;">
+          <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;">Вернуть до</div>
+          <input type="date" style="width:100%;background:#fff;border:1.5px solid #E0E0E0;border-radius:10px;padding:9px 12px;color:#1A1A1A;font-size:13px;outline:none;"/>
+        </div>
+      </div>
+      <button onclick="submitEntry()" style="width:100%;margin-top:4px;padding:13px;background:#10B981;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">Создать запись</button>
+    </div>
+  </div>
+</div>
+
+<!-- ТЕЛЕФОННАЯ КНИГА -->
+<div class="pb" id="pb-book" style="background:#0A0A0F;z-index:600;">
+  <div style="background:#5B4FE8;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0;"><button onclick="closePB()" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button><span style="font-size:18px;font-weight:800;color:#fff;flex:1;text-align:center;">Контакты</span><div style="width:34px;"></div></div>
+  <div style="padding:10px 16px;flex-shrink:0;background:#13131A;border-bottom:1px solid #2A2A38;"><input oninput="filterPB(this.value)" placeholder="🔍  Поиск..." style="width:100%;background:#1C1C28;border:1px solid #2A2A38;border-radius:12px;padding:10px 14px;color:#F0F0F8;font-size:14px;outline:none;"/></div>
+  <div class="scr" id="pbl"></div>
+</div>
+
+<!-- ══ МОДАЛ ТРАТЫ ГРУППЫ ══ -->
+<div class="mod" id="mod-grp-expense" style="background:rgba(0,0,0,.75);z-index:600;">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#0A0A0F;border-radius:24px 24px 0 0;max-height:88%;display:flex;flex-direction:column;">
+    <div style="padding:14px 16px;background:#5B4FE8;border-radius:24px 24px 0 0;display:flex;align-items:center;flex-shrink:0;">
+      <button onclick="closeGrpModal()" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
+      <span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Добавить трату</span>
+      <div style="width:34px;"></div>
+    </div>
+    <div class="scr" style="padding:14px 16px 0;">
+      <!-- Сумма -->
+      <div class="fblock">
+        <div class="flabel">Сумма</div>
+        <div style="display:flex;align-items:stretch;border-radius:12px;overflow:hidden;border:1.5px solid #E0E0E0;">
+          <input type="number" id="grp-amount" placeholder="0" style="flex:1;padding:12px;background:#fff;border:none;color:#1A1A1A;font-size:20px;font-weight:700;outline:none;border-right:1px solid #E0E0E0;min-width:0;"/>
+          <select id="grp-currency" style="padding:6px 8px;background:#fff;border:none;color:#5B4FE8;font-size:13px;font-weight:700;cursor:pointer;outline:none;flex-shrink:0;">
+            <option value="BYN">Br</option><option value="USD">$</option><option value="EUR">€</option><option value="USDT">₮</option><option value="BTC">₿</option>
+          </select>
+        </div>
+      </div>
+      <!-- Кого вписать -->
+      <div class="fblock">
+        <div class="flabel">Разделить с</div>
+        <div id="grp-members-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <!-- Комментарий -->
+      <div class="fblock">
+        <div class="flabel">Комментарий</div>
+        <textarea id="grp-comment" class="finp" placeholder="На что потратили..." style="min-height:56px;resize:none;font-family:inherit;"></textarea>
+      </div>
+      <button onclick="submitGrpExpense()" style="width:100%;margin:4px 0 24px;padding:14px;background:#5B4FE8;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;">💸 Потратил</button>
+    </div>
+  </div>
+</div>
+
+<!-- Инвайт контакта (Contacts API) -->
+<div class="sub" id="sub-invite-contact" style="background:#0A0A0F;z-index:200;">
+  <div style="background:#5B4FE8;padding:14px 16px;flex-shrink:0;display:flex;align-items:center;gap:12px;">
+    <button onclick="closeSub('sub-invite-contact')" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:18px;cursor:pointer;">‹</button>
+    <span style="flex:1;text-align:center;font-size:17px;font-weight:700;color:#fff;">Добавить контакт</span>
+    <div style="width:34px;"></div>
+  </div>
+  <div class="scr" style="padding:16px;">
+    <div class="fblock">
+      <div class="flabel">Пригласить по ссылке</div>
+      <div style="font-size:12px;color:#6B6B80;margin-bottom:10px;">Сгенерируй ссылку и отправь другу в Telegram</div>
+      <button onclick="createInvite()" style="width:100%;padding:12px;background:#5B4FE8;border:none;border-radius:12px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">🔗 Создать ссылку-приглашение</button>
+      <div id="invite-url-display" style="display:none;margin-top:10px;background:#1C1C28;border-radius:10px;padding:10px 12px;font-size:11px;color:#7C6EF0;word-break:break-all;font-family:monospace;border:1px solid #2A2A38;"></div>
+    </div>
+    <div class="fblock">
+      <div class="flabel">Принять приглашение</div>
+      <div style="font-size:12px;color:#6B6B80;margin-bottom:10px;">Введи токен из полученной ссылки</div>
+      <div style="display:flex;gap:8px;">
+        <input id="invite-token-inp" class="finp" placeholder="ci_..." style="flex:1;"/>
+        <button onclick="acceptInvite(document.getElementById('invite-token-inp').value.trim())" style="padding:11px 14px;background:#10B981;border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">Принять</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tb">
+  <div class="ti" onclick="goTab('home')"><span style="font-size:18px;">🏠</span><span id="tl-home" style="font-size:10px;font-weight:600;color:#5B4FE8;">Главная</span></div>
+  <div class="ti" onclick="goTab('balance')" style="position:relative;"><div style="position:relative;display:inline-block;"><span style="font-size:18px;">📊</span><span style="position:absolute;top:-4px;right:-6px;background:#F87171;color:#fff;font-size:9px;font-weight:700;min-width:14px;height:14px;border-radius:7px;display:flex;align-items:center;justify-content:center;padding:0 2px;">2</span></div><span id="tl-balance" style="font-size:10px;font-weight:600;color:#6B6B80;">Баланс</span></div>
+  <div class="ti" onclick="goTab('groups')"><span style="font-size:18px;">👥</span><span id="tl-groups" style="font-size:10px;font-weight:600;color:#6B6B80;">Группы</span></div>
+  <div class="ti" onclick="goTab('contacts')"><span style="font-size:18px;">📇</span><span id="tl-contacts" style="font-size:10px;font-weight:600;color:#6B6B80;">Контакты</span></div>
+  <div class="ti" onclick="goTab('profile')"><span style="font-size:18px;">👤</span><span id="tl-profile" style="font-size:10px;font-weight:600;color:#6B6B80;">Профиль</span></div>
+</div>
+
+<!-- ══ LOADING OVERLAY ══ -->
+<div id="ov-load" style="position:absolute;inset:0;z-index:950;background:#0A0A0F;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
+  <div style="width:24px;height:24px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div id="load-msg" style="font-size:13px;color:#6B6B80;text-align:center;padding:0 24px;line-height:1.6;"></div>
+</div>
+
+<!-- ══ AUTH OVERLAY ══ -->
+<div id="ov-auth" style="position:absolute;inset:0;z-index:940;background:#0A0A0F;display:none;flex-direction:column;">
+  <div style="background:#5B4FE8;padding:32px 22px 24px;flex-shrink:0;">
+    <div style="font-size:28px;font-weight:800;color:#fff;">💸 DebtNet</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;">Учёт долгов между друзьями</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px 18px;">
+    <div style="display:flex;background:#13131A;border-radius:12px;padding:4px;margin-bottom:20px;border:1px solid #2A2A38;">
+      <button id="auth-tab-login" onclick="authSwitchTab('login')" style="flex:1;padding:9px;border-radius:9px;background:none;border:none;color:#6B6B80;font-size:13px;font-weight:700;cursor:pointer;">Войти</button>
+      <button id="auth-tab-register" onclick="authSwitchTab('register')" style="flex:1;padding:9px;border-radius:9px;background:#5B4FE8;border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Регистрация</button>
+    </div>
+    <div id="auth-pane-login" style="display:none;">
+      <div class="fblock"><div class="flabel">Email</div><input id="login-email" type="email" class="finp" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="fblock"><div class="flabel">Пароль</div><input id="login-password" type="password" class="finp" placeholder="••••••••" autocomplete="current-password"/></div>
+      <button onclick="doLogin()" style="width:100%;padding:14px;background:#5B4FE8;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;">Войти →</button>
+      <div style="font-size:12px;color:#6B6B80;text-align:center;">Нет аккаунта? <span onclick="authSwitchTab('register')" style="color:#5B4FE8;cursor:pointer;font-weight:600;">Зарегистрироваться</span></div>
+    </div>
+    <div id="auth-pane-register" style="display:block;">
+      <div class="fblock"><div class="flabel">Username</div><input id="reg-username" class="finp" placeholder="ivan_petrov" autocomplete="username"/></div>
+      <div class="fblock"><div class="flabel">Email</div><input id="reg-email" type="email" class="finp" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="fblock"><div class="flabel">Пароль</div><input id="reg-password" type="password" class="finp" placeholder="Минимум 6 символов" autocomplete="new-password"/></div>
+      <button onclick="doRegister()" style="width:100%;padding:14px;background:#5B4FE8;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px;">Создать аккаунт →</button>
+      <div style="font-size:12px;color:#6B6B80;text-align:center;">Уже есть аккаунт? <span onclick="authSwitchTab('login')" style="color:#5B4FE8;cursor:pointer;font-weight:600;">Войти</span></div>
+    </div>
+    <div id="auth-err" style="display:none;margin-top:14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:10px 14px;font-size:12px;color:#F87171;line-height:1.5;"></div>
+  </div>
+</div>
+
+<div class="toast" id="t"></div>
+</div></div>
+
+<script>
+/* ── Group expense modal ── */
+function openGrpModal(members) {
+  const amtEl = document.getElementById('grp-amount');
+  const cmtEl = document.getElementById('grp-comment');
+  if (amtEl) amtEl.value = '';
+  if (cmtEl) cmtEl.value = '';
+  const ml = document.getElementById('grp-members-list');
+  if (ml) {
+    // Use full user objects from S.users, fallback to passed names
+    const users = S.users.filter(function(u){ return u.id !== S.myId; });
+    const list = users.length ? users : (members || []).map(function(n){ return {id:n, username:n}; });
+    ml.innerHTML = list.map(function(u) {
+      const name = u.username || u;
+      const uid  = u.id || name;
+      return '<label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border-radius:10px;border:1px solid #E8E8F0;cursor:pointer;">' +
+        '<input type="checkbox" checked data-uid="'+uid+'" style="width:16px;height:16px;accent-color:#5B4FE8;cursor:pointer;flex-shrink:0;"/>' +
+        '<div style="width:30px;height:30px;border-radius:50%;background:'+clrFor(uid)+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;color:#fff;flex-shrink:0;">'+ini(name)+'</div>' +
+        '<span style="font-size:14px;font-weight:600;color:#1A1A1A;">'+name+'</span>' +
+        '</label>';
+    }).join('');
+  }
+  document.getElementById('mod-grp-expense').classList.add('on');
+}
+function closeGrpModal() {
+  document.getElementById('mod-grp-expense').classList.remove('on');
+}
+function submitGrpExpense() {
+  const amount = parseFloat((document.getElementById('grp-amount') || {}).value) || 0;
+  const currency = (document.getElementById('grp-currency') || {}).value || 'BYN';
+  const comment = ((document.getElementById('grp-comment') || {}).value || '').trim();
+  if (!amount) { toast('⚠ Введите сумму'); return; }
+  const checked = document.querySelectorAll('#grp-members-list input[type=checkbox]:checked');
+  if (!checked.length) { toast('⚠ Выберите участников'); return; }
+  closeGrpModal();
+  toast('✓ Трата ' + amount + ' ' + currency + ' добавлена');
+}
+
+
+/* ── Config ── */
+const PUB_API  = 'https://trx-api-test.d4f.tech'; // SMART_LOANS_API_URL
+const ADM_API  = 'https://trx-api-test.d4f.tech'; // SMART_LOANS_ADMIN_URL
+const ADM_KEY  = '=dev-secret';                    // SMART_LOANS_API_KEY (admin only, legacy)
+
+/* ── JWT storage ── */
+let jwt = { access: null, refresh: null, user_id: null };
+
+function saveJwt(t) {
+  jwt = { access: t.access_token, refresh: t.refresh_token, user_id: t.user_id };
+  try { localStorage.setItem('dn_jwt', JSON.stringify(jwt)); } catch(e) {}
+}
+function loadJwt() {
+  try {
+    const t = JSON.parse(localStorage.getItem('dn_jwt') || 'null');
+    if (t && t.access) { jwt = t; return true; }
+  } catch(e) {}
+  return false;
+}
+function clearJwt() {
+  jwt = { access: null, refresh: null, user_id: null };
+  try { localStorage.removeItem('dn_jwt'); } catch(e) {}
+}
+
+/* ── Public API fetch (auto-refresh) ── */
+async function pubReq(method, path, body, _retry) {
+  if (!jwt.access) throw new Error('Не авторизован');
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt.access };
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(PUB_API + path, opts);
+  if (r.status === 401 && !_retry && jwt.refresh) {
+    const rr = await fetch(PUB_API + '/auth/refresh', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: jwt.refresh })
+    });
+    if (rr.ok) { saveJwt(await rr.json()); return pubReq(method, path, body, true); }
+    clearJwt(); showAuth(); throw new Error('Сессия истекла');
+  }
+  if (!r.ok) {
+    let msg = 'HTTP ' + r.status;
+    try { const j = await r.json(); msg = j.message || j.error || msg; } catch(e) {}
+    throw new Error(msg);
+  }
+  try { return await r.json(); } catch(e) { return {}; }
+}
+
+/* ── Admin API fetch (legacy, for user list only) ── */
+async function admReq(path) {
+  const r = await fetch(ADM_API + path, { headers: { 'Content-Type': 'application/json', 'x-api-key': ADM_KEY } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+let S = { myId: null, myUsername: null, users: [], mode: 'give' };
+
+/* ── Auth overlay ── */
+function showAuth() {
+  hideLoad();
+  document.getElementById('ov-auth').style.display = 'flex';
+}
+function hideAuth() {
+  document.getElementById('ov-auth').style.display = 'none';
+}
+function authSwitchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('auth-tab-login').style.cssText   = isLogin ? 'flex:1;padding:9px;border-radius:9px;background:#5B4FE8;border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;' : 'flex:1;padding:9px;border-radius:9px;background:none;border:none;color:#6B6B80;font-size:13px;font-weight:700;cursor:pointer;';
+  document.getElementById('auth-tab-register').style.cssText = isLogin ? 'flex:1;padding:9px;border-radius:9px;background:none;border:none;color:#6B6B80;font-size:13px;font-weight:700;cursor:pointer;' : 'flex:1;padding:9px;border-radius:9px;background:#5B4FE8;border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;';
+  document.getElementById('auth-pane-login').style.display    = isLogin ? 'block' : 'none';
+  document.getElementById('auth-pane-register').style.display = isLogin ? 'none'  : 'block';
+  document.getElementById('auth-err').style.display = 'none';
+}
+function showAuthErr(msg) {
+  const el = document.getElementById('auth-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function doRegister() {
+  const username = document.getElementById('reg-username').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!username) return showAuthErr('Введите username');
+  if (!email)    return showAuthErr('Введите email');
+  if (password.length < 6) return showAuthErr('Пароль минимум 6 символов');
+  showLoad('Создаём аккаунт...');
+  try {
+    const r = await fetch(PUB_API + '/auth/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password, source: 'debtnet-web' })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || 'HTTP ' + r.status); }
+    saveJwt(await r.json());
+    S.myUsername = username;
+    hideAuth(); hideLoad();
+    await loadUsersAndRender();
+  } catch(e) { hideLoad(); showAuth(); showAuthErr('Ошибка: ' + e.message); }
+}
+
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAuthErr('Заполните email и пароль');
+  showLoad('Вход...');
+  try {
+    const r = await fetch(PUB_API + '/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password, source: 'debtnet-web' })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.message || 'HTTP ' + r.status); }
+    saveJwt(await r.json());
+    hideAuth(); hideLoad();
+    await loadUsersAndRender();
+  } catch(e) { hideLoad(); showAuth(); showAuthErr('Неверный email или пароль'); }
+}
+
+function logout() {
+  clearJwt();
+  S = { myId: null, myUsername: null, users: [], mode: 'give' };
+  showAuth();
+}
+
+/* ── Load contacts + render app ── */
+async function loadContactsAPI() {
+  try {
+    const data = await pubReq('GET', '/contacts');
+    const list = data.contacts || (Array.isArray(data) ? data : []);
+    S.users = list.map(function(c){ return { id: c.id, username: c.username, source: c.source }; });
+  } catch(e) {
+    // fallback: contacts from debtors will be merged in refreshAll
+    S.users = [];
+  }
+}
+
+async function loadUsersAndRender() {
+  showLoad('Загрузка данных...');
+  S.myId = jwt.user_id;
+  await loadContactsAPI();
+  await refreshAll();
+  updateProfile();
+  updateContactsList();
+  startPolling();
+}
+
+/* ── Data ── */
+async function refreshAll() {
+  try {
+    const [summary, debtors] = await Promise.all([
+      pubReq('GET', '/loans/summary'),
+      pubReq('GET', '/loans/debtors'),
+    ]);
+    hideLoad();
+    // If contacts list empty, build from debtors
+    if (S.users.length === 0) {
+      const list = Array.isArray(debtors) ? debtors : (debtors.debtors || debtors.items || []);
+      list.forEach(function(d) {
+        const uid  = d.user_id || d.counterparty_id || '';
+        const name = d.username || (d.user && d.user.username) || '';
+        if (uid && !S.users.find(function(u){ return u.id === uid; }))
+          S.users.push({ id: uid, username: name, source: 'loan' });
+      });
+      updateContactsList();
+    }
+    renderSummary(summary);
+    renderDebtors(debtors);
+  } catch(e) {
+    hideLoad();
+    toast('❌ ' + e.message);
+  }
+}
+
+function renderSummary(s) {
+  const bal    = Number(s.balance || s.net_balance || 0);
+  const credit = Number(s.total_credit || s.credit || 0);
+  const debt   = Number(s.total_debt || s.debt || 0);
+  const fmt = n => (n >= 0 ? '+' : '') + Math.round(n) + ' Br';
+  // Home
+  const hg = document.getElementById('h-greeting');
+  if (hg) hg.textContent = 'Привет, ' + (S.myUsername || '') + ' 👋';
+  const hn = document.getElementById('h-net');
+  if (hn) { hn.textContent = fmt(bal); hn.style.color = bal >= 0 ? '#34D399' : '#F87171'; }
+  const hom = document.getElementById('h-owe-me'); if (hom) hom.textContent = '+' + Math.round(credit) + ' Br';
+  const hio = document.getElementById('h-i-owe');  if (hio) hio.textContent = '-' + Math.round(debt) + ' Br';
+  // Balance page
+  const bom = document.getElementById('b-owe-me'); if (bom) bom.textContent = '+' + Math.round(credit) + ' Br';
+  const bio = document.getElementById('b-i-owe');  if (bio) bio.textContent = '-' + Math.round(debt) + ' Br';
+}
+
+function renderDebtors(data) {
+  const list = Array.isArray(data) ? data : (data.debtors || data.items || []);
+  function card(d) {
+    const name = d.username || d.user?.username || d.counterparty?.username || '?';
+    const uid  = d.user_id  || d.counterparty_id || '';
+    const amt  = Number(d.amount || d.balance || 0);
+    const col  = amt >= 0 ? '#10B981' : '#EF4444';
+    return '<div class="card" style="display:flex;align-items:center;gap:10px;">' +
+      '<div style="width:38px;height:38px;border-radius:50%;background:'+clrFor(uid)+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">'+ini(name)+'</div>' +
+      '<div style="flex:1;"><div style="font-size:13px;font-weight:700;color:#1A1A1A;">'+name+'</div>' +
+      '<div style="font-size:11px;color:'+col+';">'+(amt>=0?'должен вам':'вы должны')+'</div></div>' +
+      '<div style="font-size:13px;font-weight:700;color:'+col+';">'+(amt>=0?'+':'')+Math.round(amt)+' Br</div></div>';
+  }
+  const empty = '<div style="color:#6B6B80;font-size:12px;text-align:center;padding:24px 0;">Нет активных долгов</div>';
+  const html = list.length ? list.map(card).join('') : empty;
+  const hr = document.getElementById('h-recent'); if (hr) hr.innerHTML = html;
+  const bb = document.getElementById('bc-bal');   if (bb) bb.innerHTML = html;
+  const bi = document.getElementById('bc-inc');
+  if (bi) bi.innerHTML = list.filter(d=>Number(d.amount||d.balance||0)>0).map(card).join('') || empty;
+  const be = document.getElementById('bc-exp');
+  if (be) be.innerHTML = list.filter(d=>Number(d.amount||d.balance||0)<0).map(card).join('') || empty;
+  const bp = document.getElementById('bc-pen'); if (bp) bp.innerHTML = html;
+  // Update tab badges — show only when count > 0
+  function setBadge(id, count, color) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (count > 0) { el.textContent = count; el.style.display = 'inline'; }
+    else { el.style.display = 'none'; }
+  }
+  const oweCount  = list.filter(function(d){ return Number(d.amount||d.balance||0) > 0; }).length;
+  const debtCount = list.filter(function(d){ return Number(d.amount||d.balance||0) < 0; }).length;
+  setBadge('bt-bal-badge', oweCount + debtCount, '#7C6EF0');
+  setBadge('bt-inc-badge', oweCount,  '#34D399');
+  setBadge('bt-exp-badge', debtCount, '#F87171');
+  // Ожидают = total unique counterparties (all open balances are "pending" resolution)
+  setBadge('bt-pen-badge', list.length, '#FBB147');
+}
+
+/* ── Submit loan via POST /loans ── */
+async function submitEntry() {
+  const name   = (document.getElementById('ninp')||{}).value?.trim()||'';
+  const amount = parseFloat((document.getElementById('amount-inp')||{}).value)||0;
+  const desc   = ((document.getElementById('comment-inp')||document.getElementById('desc-inp')||{}).value||'').trim();
+  const user   = S.users.find(function(u){return u.username===name;});
+  if (!user||!amount){toast('⚠ Выберите контакт и сумму');return;}
+  const finalAmt = S.mode==='give'?Math.abs(amount):-Math.abs(amount);
+  toast('⏳ Записываем...');
+  try{
+    const body={receiver_id:user.id,amount:finalAmt};
+    if(desc)body.description=desc;
+    await pubReq('POST','/loans',body);
+    closeModal();
+    const ai=document.getElementById('amount-inp');if(ai)ai.value='';
+    const ci=document.getElementById('comment-inp');if(ci)ci.value='';
+    await refreshAll();
+    toast('✓ Операция записана');
+  }catch(e){toast('❌ '+e.message);}
+}
+
+/* ── Profile ── */
+function updateProfile() {
+  const me = S.users.find(u => u.id === S.myId) || { username: S.myUsername||'', id: S.myId||'' };
+  const pa = document.getElementById('p-avatar');    if (pa) pa.textContent = ini(me.username||'?');
+  const pn = document.getElementById('p-name');      if (pn) pn.textContent = me.username || '—';
+  const pu = document.getElementById('p-uid');       if (pu) pu.textContent = 'id: ' + (me.id||'').slice(-8);
+  const pt = document.getElementById('p-tx-count');  if (pt) pt.textContent = '—';
+  const pu2= document.getElementById('p-users-count');if(pu2)pu2.textContent = S.users.length;
+}
+
+/* ── Contacts list (from admin users) ── */
+function updateContactsList() {
+  const cl = document.getElementById('contacts-list');
+  if (!cl) return;
+  const others = S.users.filter(function(u){ return u.id !== S.myId; });
+  cl.innerHTML = others.map(function(u) {
+    const src = u.source === 'explicit'
+      ? '<span style="font-size:9px;background:rgba(91,79,232,.12);color:#7C6EF0;padding:2px 5px;border-radius:6px;font-weight:600;">инвайт</span>'
+      : u.source === 'loan'
+      ? '<span style="font-size:9px;background:rgba(16,185,129,.1);color:#10B981;padding:2px 5px;border-radius:6px;font-weight:600;">долг</span>'
+      : '';
+    return '<div style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;">' +
+      '<div style="width:32px;height:32px;border-radius:50%;background:'+clrFor(u.id)+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0;">'+ini(u.username)+'</div>' +
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1A1A1A;">'+u.username+'</div>'+(src?'<div style="margin-top:1px;">'+src+'</div>':'')+'</div>' +
+      '<button data-del="'+u.id+'" style="width:26px;height:26px;border-radius:7px;background:rgba(239,68,68,.08);border:none;cursor:pointer;color:#EF4444;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">×</button>' +
+      '</div>';
+  }).join('') || '<div style="color:#6B6B80;font-size:12px;text-align:center;padding:24px 0;">Нет контактов</div>';
+  cl.querySelectorAll('[data-del]').forEach(function(btn){
+    btn.addEventListener('click',function(e){e.stopPropagation();removeContact(this.dataset.del);});
+  });
+  CT.length = 0;
+  others.forEach(function(u){ CT.push({n:u.username,p:u.id,c:clrFor(u.id),i:ini(u.username)}); });
+}
+
+function filterContacts(q) {
+  const cl = document.getElementById('contacts-list'); if (!cl) return;
+  cl.innerHTML = S.users.filter(u => u.id !== S.myId && u.username.toLowerCase().includes(q.toLowerCase())).map(u =>
+    '<div style="background:#fff;border-radius:10px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:7px;cursor:pointer;">' +
+    '<div style="width:38px;height:38px;border-radius:50%;background:'+clrFor(u.id)+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;">'+ini(u.username)+'</div>' +
+    '<div style="flex:1;font-size:14px;font-weight:600;color:#1A1A1A;">'+u.username+'</div>' +
+    '<span style="color:#ccc;">›</span></div>'
+  ).join('');
+}
+
+/* ── Polling ── */
+function startPolling() {
+  setInterval(async function() {
+    if (!jwt.access) return;
+    try {
+      const [sum, deb] = await Promise.all([pubReq('GET','/loans/summary'), pubReq('GET','/loans/debtors')]);
+      renderSummary(sum); renderDebtors(deb);
+    } catch(e) {}
+  }, 20000);
+}
+
+/* ── Boot ── */
+async function boot() {
+  if (loadJwt()) {
+    showLoad('Загрузка...');
+    await loadUsersAndRender();
+  } else {
+    showAuth();
+  }
+}
+
+/* ── Load/hide helpers ── */
+function showLoad(msg) {
+  document.getElementById('load-msg').innerHTML = msg || 'Загрузка...';
+  document.getElementById('ov-load').style.display = 'flex';
+}
+function hideLoad() {
+  document.getElementById('ov-load').style.display = 'none';
+}
+
+/* ── Original UI functions (unchanged) ── */
+const TABS=['home','balance','groups','contacts','profile'];
+function goTab(n){TABS.forEach(function(x){const p=document.getElementById('pg-'+x);if(p)p.classList.remove('on');document.getElementById('tl-'+x).style.color='#6B6B80';});document.getElementById('pg-'+n).classList.add('on');document.getElementById('tl-'+n).style.color='#5B4FE8';}
+function openSub(id){const el=document.getElementById(id);if(el)el.classList.add('on');if(id==='sub-newgroup')renderGrpContacts();if(id==='sub-pdf')renderPdfPeriods();if(id==='sub-currency')renderCurList();if(id==='sub-dashset')renderDashCur();}
+function closeSub(id){const el=document.getElementById(id);if(el)el.classList.remove('on');}
+const BTC={bal:{c:'#7C6EF0',b:'#5B4FE8'},inc:{c:'#34D399',b:'#10B981'},exp:{c:'#F87171',b:'#EF4444'},pen:{c:'#FBB147',b:'#F59E0B'}};
+function setBT(t){['bal','inc','exp','pen'].forEach(function(x){document.getElementById('bt-'+x).style.color=x===t?BTC[x].c:'#6B6B80';document.getElementById('bt-'+x).style.borderBottom=x===t?'2.5px solid '+BTC[x].b:'2.5px solid transparent';const bc=document.getElementById('bc-'+x);if(bc)bc.style.display=x===t?'block':'none';});}
+function openModal(m){S.mode=m;document.getElementById('mod-entry').classList.add('on');setGT(m);}
+function closeModal(){document.getElementById('mod-entry').classList.remove('on');}
+function setGT(m){
+  const bgEl=document.getElementById('bg'),btEl=document.getElementById('bt');
+  if(bgEl){bgEl.classList[m==='give'?'add':'remove']('act');const svg=bgEl.querySelector('svg');if(svg)svg.setAttribute('fill',m==='give'?'#5B4FE8':'#6B6B80');}
+  if(btEl){btEl.classList[m==='take'?'add':'remove']('act');btEl.classList[m==='take'?'remove':'add']('act');const svg=btEl.querySelector('svg');if(svg)svg.setAttribute('fill',m==='take'?'#5B4FE8':'#6B6B80');}
+  if(m==='give'){if(bgEl)bgEl.classList.add('act');if(btEl)btEl.classList.remove('act');}
+  else{if(btEl)btEl.classList.add('act');if(bgEl)bgEl.classList.remove('act');}
+  const nl=document.getElementById('nlbl');if(nl)nl.textContent=m==='give'?'Кому даёте':'У кого берёте';
+}
+function setType(t){const AM='flex:1;padding:11px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;background:#10B981;border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;gap:6px;';const IM='flex:1;padding:11px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;background:#2A2A38;border:2px solid transparent;color:#6B6B80;display:flex;align-items:center;justify-content:center;gap:6px;';document.getElementById('bm').style.cssText=t==='money'?AM:IM;document.getElementById('bth').style.cssText=t==='thing'?AM:IM;document.getElementById('bm').querySelector('svg').setAttribute('fill',t==='money'?'white':'#6B6B80');document.getElementById('bth').querySelector('svg').setAttribute('fill',t==='thing'?'white':'#6B6B80');document.getElementById('bmoney').style.display=t==='money'?'block':'none';document.getElementById('bthing').style.display=t==='thing'?'block':'none';}
+function selPlan(p){document.getElementById('pl-m').style.borderColor=p==='m'?'#5B4FE8':'#2A2A38';document.getElementById('pl-y').style.borderColor=p==='y'?'#5B4FE8':'#2A2A38';toast(p==='m'?'Выбран: 1 месяц — 1 $':'Выбран: 1 год — 10 $');}
+const MSGS={tg:{l:'Ник в Telegram',p:'@username'},vb:{l:'Номер Viber',p:'+375 29 000-00-00'},wa:{l:'Номер WhatsApp',p:'+375 29 000-00-00'},sg:{l:'Ник в Signal',p:'@username'},em:{l:'E-mail',p:'example@mail.com'}};
+let aMsg=null;
+function selMsg(k){['tg','vb','wa','sg','em'].forEach(function(x){document.getElementById('mb-'+x).classList.remove('act');});const w=document.getElementById('nick-wrap');if(aMsg===k){aMsg=null;w.style.display='none';return;}aMsg=k;document.getElementById('mb-'+k).classList.add('act');document.getElementById('nick-lbl').textContent=MSGS[k].l;document.getElementById('nick-inp').placeholder=MSGS[k].p;document.getElementById('nick-inp').value='';w.style.display='block';}
+const GC=[];let gSel=[];
+function renderGrpContacts(){gSel=[];document.getElementById('sel-count').textContent='0';document.getElementById('sel-names').textContent='';const contacts=S.users.filter(function(u){return u.id!==S.myId;});document.getElementById('grp-contacts').innerHTML=contacts.map(function(c,i){return '<div data-gi="'+i+'" id="gc'+i+'" style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0A0A0F;border-radius:12px;margin-bottom:7px;border:1px solid #2A2A38;cursor:pointer;"><div style="width:36px;height:36px;border-radius:50%;background:'+clrFor(c.id)+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;">'+ini(c.username)+'</div><span style="flex:1;font-size:13px;color:#F0F0F8;">'+c.username+'</span><div id="chk'+i+'" style="width:22px;height:22px;border-radius:6px;background:#2A2A38;border:2px solid #2A2A38;display:flex;align-items:center;justify-content:center;"></div></div>';}).join('');document.getElementById('grp-contacts').querySelectorAll('[data-gi]').forEach(function(el){el.addEventListener('click',function(){tgc(parseInt(this.dataset.gi));});});}
+function tgc(i){const idx=gSel.indexOf(i);if(idx>=0)gSel.splice(idx,1);else gSel.push(i);const on=gSel.includes(i);const chk=document.getElementById('chk'+i);const row=document.getElementById('gc'+i);chk.style.background=on?'#5B4FE8':'#2A2A38';chk.style.borderColor=on?'#5B4FE8':'#2A2A38';chk.innerHTML=on?'<span style="color:#fff;font-size:11px;font-weight:700;">✓</span>':'';row.style.borderColor=on?'#5B4FE8':'#2A2A38';document.getElementById('sel-count').textContent=gSel.length;const contacts=S.users.filter(function(u){return u.id!==S.myId;});document.getElementById('sel-names').textContent=gSel.length?gSel.map(function(x){return contacts[x]?contacts[x].username:'';}).join(', '):'';}
+function createGroup(){
+  const name=document.getElementById('grp-name').value.trim();
+  if(!name){toast('⚠ Введите название');return;}
+  if(!gSel.length){toast('⚠ Выберите участников');return;}
+  const contacts=S.users.filter(function(u){return u.id!==S.myId;});
+  const members=gSel.map(function(x){return contacts[x];}).filter(Boolean);
+  const emojis=['🎉','🏖️','💼','🍕','🚗','🎮','🏠','✈️'];
+  const emoji=emojis[Math.floor(Math.random()*emojis.length)];
+  // Add new group card to groups list
+  const grpList=document.querySelector('#pg-groups .scr');
+  if(grpList){
+    const avatars=members.slice(0,3).map(function(m){
+      return '<div style="width:26px;height:26px;border-radius:50%;background:'+clrFor(m.id)+';display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;margin-left:-7px;">'+ini(m.username)+'</div>';
+    }).join('');
+    const newCard=document.createElement('div');
+    newCard.className='card';
+    newCard.style.cursor='pointer';
+    newCard.innerHTML='<div style="display:flex;align-items:center;gap:11px;margin-bottom:8px;"><div style="width:42px;height:42px;border-radius:12px;background:rgba(91,79,232,.12);display:flex;align-items:center;justify-content:center;font-size:20px;">'+emoji+'</div><div style="flex:1;"><div style="font-size:15px;font-weight:700;color:#1A1A1A;">'+name+'</div><div style="font-size:11px;color:#6B6B80;">'+members.length+' участников · BYN</div></div><div style="font-size:15px;font-weight:700;color:#34D399;">0 Br</div></div><div style="display:flex;align-items:center;"><div style="width:26px;height:26px;border-radius:50%;background:#5B4FE8;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;border:2px solid #13131A;">Я</div>'+avatars+'<span style="margin-left:auto;font-size:11px;font-weight:600;color:#34D399;">Новая</span></div>';
+    grpList.appendChild(newCard);
+  }
+  closeSub('sub-newgroup');
+  document.getElementById('grp-name').value='';
+  gSel=[];
+  toast('✓ Группа "'+name+'" создана');
+}
+const CURS=[{code:'BYN',sym:'Br',name:'Белорусский рубль'},{code:'USD',sym:'$',name:'Доллар США'},{code:'EUR',sym:'€',name:'Евро'},{code:'USDT',sym:'₮',name:'Tether'},{code:'BTC',sym:'₿',name:'Биткоин'}];let sCur='BYN';
+function renderCurList(){document.getElementById('cur-list').innerHTML=CURS.map(function(c){const sel=sCur===c.code;return '<div data-code="'+c.code+'" style="background:#13131A;border-radius:12px;padding:14px;margin-bottom:8px;border:'+(sel?'2px solid #5B4FE8':'1px solid #2A2A38')+';display:flex;align-items:center;cursor:pointer;"><div style="width:36px;height:36px;border-radius:10px;background:'+(sel?'rgba(91,79,232,.2)':'#2A2A38')+';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:'+(sel?'#7C6EF0':'#6B6B80')+';flex-shrink:0;">'+c.sym+'</div><div style="flex:1;margin-left:12px;"><div style="font-size:14px;font-weight:600;color:#F0F0F8;">'+c.code+'</div><div style="font-size:12px;color:#6B6B80;">'+c.name+'</div></div>'+(sel?'<span style="color:#5B4FE8;font-size:20px;font-weight:700;">✓</span>':'')+'</div>';}).join('');document.getElementById('cur-list').querySelectorAll('[data-code]').forEach(function(el){el.addEventListener('click',function(){pickCur(this.dataset.code);});});}
+function pickCur(c){sCur=c;document.getElementById('cur-label').textContent=c;renderCurList();toast('✓ Валюта: '+c);}
+let sFmt='pdf',sPer='month';const PERS=[{id:'week',l:'За неделю'},{id:'month',l:'За месяц'},{id:'quarter',l:'За квартал'},{id:'year',l:'За год'},{id:'all',l:'Всё время'}];
+function renderPdfPeriods(){document.getElementById('pdf-periods').innerHTML=PERS.map(function(p){const sel=sPer===p.id;return '<div data-per="'+p.id+'" style="background:#13131A;border-radius:12px;padding:11px 14px;border:'+(sel?'2px solid #5B4FE8':'1px solid #2A2A38')+';display:flex;align-items:center;justify-content:space-between;cursor:pointer;"><span style="font-size:14px;color:#F0F0F8;">'+p.l+'</span>'+(sel?'<span style="color:#5B4FE8;font-weight:700;">✓</span>':'')+'</div>';}).join('');document.getElementById('pdf-periods').querySelectorAll('[data-per]').forEach(function(el){el.addEventListener('click',function(){sPer=this.dataset.per;renderPdfPeriods();});});}
+function selFmt(f){sFmt=f;['pdf','xlsx','csv'].forEach(function(x){const el=document.getElementById('fp-'+x);el.style.background=x===f?'#5B4FE8':'#13131A';el.style.borderColor=x===f?'#5B4FE8':'#2A2A38';el.querySelector('div:last-child').style.color=x===f?'#fff':'#6B6B80';});}
+const DC=[{c:'BYN',s:'Br'},{c:'USD',s:'$'},{c:'EUR',s:'€'},{c:'USDT',s:'₮'},{c:'BTC',s:'₿'}];let dSel=['BYN','USD','EUR','USDT','BTC'];
+function renderDashCur(){document.getElementById('dash-cur').innerHTML=DC.map(function(c){const sel=dSel.includes(c.c);return '<div data-dc="'+c.c+'" id="dc-'+c.c+'" style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#13131A;border-radius:12px;margin-bottom:6px;border:'+(sel?'1px solid #5B4FE8':'1px solid #2A2A38')+';cursor:pointer;"><div style="width:30px;height:30px;border-radius:8px;background:rgba(91,79,232,.15);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#7C6EF0;">'+c.s+'</div><span style="flex:1;font-size:13px;color:#F0F0F8;">'+c.c+'</span><div style="width:20px;height:20px;border-radius:50%;background:'+(sel?'#5B4FE8':'#2A2A38')+';display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;">'+(sel?'✓':'')+'</div></div>';}).join('');document.getElementById('dash-cur').querySelectorAll('[data-dc]').forEach(function(el){el.addEventListener('click',function(){tdc(this.dataset.dc);});});}
+function tdc(c){const i=dSel.indexOf(c);if(i>=0)dSel.splice(i,1);else dSel.push(c);renderDashCur();}
+const CT=[];
+function renderPB(list){document.getElementById('pbl').innerHTML=list.map(function(c){return '<div data-pbn="'+encodeURIComponent(c.n)+'" style="display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:.5px solid #2A2A38;cursor:pointer;"><div style="width:42px;height:42px;border-radius:50%;background:'+c.c+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;">'+c.i+'</div><div><div style="font-size:14px;font-weight:600;color:#F0F0F8;">'+c.n+'</div><div style="font-size:12px;color:#6B6B80;">'+c.p+'</div></div></div>';}).join('');document.getElementById('pbl').querySelectorAll('[data-pbn]').forEach(function(el){el.addEventListener('click',function(){pickC(decodeURIComponent(this.dataset.pbn));});});}
+function filterPB(q){renderPB(CT.filter(function(c){return c.n.toLowerCase().indexOf(q.toLowerCase())!==-1;}));}
+function openPB(){document.getElementById('pb-book').classList.add('on');renderPB(CT);}
+function closePB(){document.getElementById('pb-book').classList.remove('on');}
+function pickC(n){document.getElementById('ninp').value=n;closePB();toast('✓ '+n);}
+function ini(n){if(!n)return'?';const p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase();}
+const CL=['#5B4FE8','#10B981','#F59E0B','#EF4444','#3B82F6','#7B519D','#0EA5E9','#EC4899'];
+function clrFor(id){let h=0;for(let i=0;i<(id||'').length;i++)h=(h*31+id.charCodeAt(i))>>>0;return CL[h%CL.length];}
+function toast(m){const t=document.getElementById('t');t.textContent=m;t.style.opacity='1';clearTimeout(window._tt);window._tt=setTimeout(function(){t.style.opacity='0';},2800);}
+
+// Profile page — add logout button
+function initProfilePage(){
+  const pu=document.getElementById('p-uid');
+  if(pu&&!document.getElementById('logout-btn')){
+    const btn=document.createElement('div');
+    btn.id='logout-btn';
+    btn.innerHTML='<div onclick="logout()" class="mrow" style="margin-top:12px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);"><div class="mico" style="background:rgba(239,68,68,.15);">🚪</div><span style="flex:1;font-size:13px;color:#F87171;">Выйти из аккаунта</span></div>';
+    pu.closest('.scr').querySelector('div:last-child').appendChild(btn);
+  }
+}
+
+/* ── Contacts API ── */
+async function createInvite() {
+  try {
+    const data = await pubReq('POST', '/contacts/invites');
+    const url  = data.tg_invite_url || data.link || '';
+    if (url) {
+      try { navigator.clipboard.writeText(url); } catch(e) {}
+      const el = document.getElementById('invite-url-display');
+      if (el) { el.textContent = url; el.style.display = 'block'; }
+      toast('🔗 Ссылка скопирована');
+    }
+  } catch(e) { toast('❌ ' + e.message); }
+}
+
+async function acceptInvite(token) {
+  if (!token) { toast('⚠ Введите токен'); return; }
+  try {
+    const data = await pubReq('POST', '/contacts/invites/' + token + '/accept');
+    const name = data.contact && data.contact.username ? data.contact.username : '';
+    toast('✓ Контакт ' + name + ' добавлен');
+    await loadContactsAPI();
+    updateContactsList();
+  } catch(e) { toast('❌ ' + e.message); }
+}
+
+async function removeContact(userId) {
+  try {
+    await pubReq('DELETE', '/contacts/' + userId);
+    S.users = S.users.filter(function(u){ return u.id !== userId; });
+    updateContactsList();
+    toast('✓ Контакт удалён');
+  } catch(e) { toast('❌ ' + e.message); }
+}
+
+boot();
+</script>
+</body></html>
