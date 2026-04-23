@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  api:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://debtnet:debtnet@db:5432/debtnet
+      JWT_SECRET: change_me_in_production
+      JWT_REFRESH_SECRET: change_me_in_production_2
+      PORT: 3000
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: debtnet
+      POSTGRES_PASSWORD: debtnet
+      POSTGRES_DB: debtnet
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
